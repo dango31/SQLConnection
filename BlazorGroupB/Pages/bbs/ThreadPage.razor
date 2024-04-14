@@ -1,0 +1,139 @@
+﻿@page "/ThreadPage/{CodeID?}"
+
+@using BlazorGroupB.Data
+@using BlazorGroupB.Data.DAO;
+@using BlazorGroupB.Models
+@using System.Text
+@using Microsoft.EntityFrameworkCore
+@using System.Configuration
+@using Npgsql
+@using System.Data
+@using System.Diagnostics
+@inject BlazorGroupBDbContext _context
+@inject NavigationManager NaviManager
+@inject IJSRuntime JSRuntime
+
+@if (Msgs != null && int.TryParse(CodeID, out int number))
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>MessageID</th>
+                 <th>MessageNumber</th> 
+                <th>本文DetailMessage</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            @foreach (Messages item in Msgs)
+            {
+                <tr>
+                     <th>@item.MessageID</th> 
+                     <td>@item.MessageNumber</td> 
+                     <td>@item.DetailMessage</td> 
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else
+{
+
+}
+
+<EditForm Model="@msg" OnSubmit="OnCreateMessage">
+    <div class="form-group">
+        <label asp-for="msg.DetailMessage" class="control-label"></label>
+        <input asp-for="msg.DetailMessage" class="form-control" @bind-value=@msg.DetailMessage />
+    </div>
+    <button class="btn btn-primary">Message送信</button>
+</EditForm>
+
+
+@code {
+    [Parameter]
+    public string CodeID { get; set; }
+
+    private List<Messages> Msgs { get; set; }
+    Messages msg = new Messages();
+
+    private NpgsqlConnection conn = null;
+    private MessagesDao dao;
+
+    private async void OnCreateMessage()
+    {
+        //  UAを追加する
+        var remoteUserAgent = await JSRuntime.InvokeAsync<string>("getUserAgent");
+        msg.UserID = remoteUserAgent;
+
+        //  ThreadIDを追加する
+        if (int.TryParse(CodeID, out int number))
+        {
+            msg.ThreadID = number;
+        }
+        else
+        {
+            msg.ThreadID = 0;
+        }
+
+        //  投稿時間を追加する
+        DateTime dt = DateTime.Now;
+        msg.PostTime = dt;
+
+        //  メッセージを作成する
+        dao.Insert(msg);
+
+        // _context.Add(msg);
+        // _context.SaveChanges();
+
+        StringBuilder sb = new StringBuilder();
+        sb.Append("/ThreadPage/")
+            .Append(CodeID);
+        NaviManager.NavigateTo(sb.ToString(), forceLoad: true);
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        //  データベースから値を取り出す
+        if (int.TryParse(CodeID, out int number))
+        {
+            try
+            {
+                Msgs = await _context.Messages.Where(m => m.ThreadID == number).ToListAsync<Messages>();
+
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex.Message);
+            }
+
+        }
+        else
+        {
+            Msgs = await _context.Messages.ToListAsync<Messages>();
+        }
+        daoConnection();
+
+        //  テスト用のデータを手動で打ち込む
+
+        // Msgs = new List<Messages>()
+        // {
+        //     //  ここに一つずつ書いていく(五つほど)
+        //     new Messages(),
+        //     new Messages(),
+        // };
+
+    }
+    private void daoConnection()
+    {
+        var builder = new NpgsqlConnectionStringBuilder
+            {
+                Host = "localhost",
+                Database = "test",
+                Username = "postgres",
+                Password = "postgres"
+            };
+        conn = new NpgsqlConnection(builder.ConnectionString);
+        dao = new MessagesDao(conn);
+    }
+}
