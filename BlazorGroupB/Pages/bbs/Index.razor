@@ -73,25 +73,6 @@ else
         string url = "/ThreadPage/" + number.ToString();
         NaviManager.NavigateTo(url);
 
-        // _contextThread.Add(th);
-        // _contextThread.SaveChanges();
-
-        // //  主キーを取り出してurlを再定義する
-        // Ths = await _contextThread.Threads.ToListAsync<Threads>();
-
-        // Threads laststRow = Ths.OrderByDescending(row => row.ThreadUrl).LastOrDefault();
-        // string key = laststRow.ThreadID.ToString();
-
-        // StringBuilder sb = new StringBuilder();
-        // sb.Append("/ThreadPage")
-        //     .Append("/")
-        //     .Append(key);
-
-        // laststRow.ThreadUrl = sb.ToString();
-        // _contextThread.SaveChanges();
-
-        // //  そのurlにジャンプする
-        // NaviManager.NavigateTo(sb.ToString());
     }
 
     /// <summary>

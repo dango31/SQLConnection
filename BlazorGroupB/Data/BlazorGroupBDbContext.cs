@@ -12,5 +12,6 @@ public class BlazorGroupBDbContext : DbContext
     }
     public DbSet<Threads> Threads { get; set; } = default!;
     public DbSet<Messages> Messages { get; set; } = default!;
+    public DbSet<Users> Users { get; set; } = default!;
     
 }
