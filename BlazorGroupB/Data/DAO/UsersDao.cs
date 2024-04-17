@@ -18,8 +18,6 @@ namespace BlazorGroupB.Data.DAO;
 public class UsersDao
 {
     private NpgsqlConnection conn;
-    BlazorGroupBDbContext _contextUsers;
-    //List<Users> users = new List<Users>();
 
     /// <summary>
     /// コンストラクタ
@@ -27,7 +25,6 @@ public class UsersDao
     public UsersDao(NpgsqlConnection connection)
     {
         conn = connection;
-        //users = _contextUsers.Users.ToList<Users>();
 
     }
 
@@ -73,26 +70,37 @@ public class UsersDao
     {
         NpgsqlTransaction transaction = null;
         string result = "";
+        try
+        {
+            //  接続確認
+            if (!Connection())
+                return result;
 
-        //  接続確認
-        if (!Connection())
-            return result;
+            //  DTOの確認
+            if (userdata == null)
+                return result;
 
-        //  DTOの確認
-        if (userdata == null)
-            return result;
+            //  重複の排除
+            userdata.UserID = UserAgentContain(userdata);
+            if (userdata.UserID != null)
+                return userdata.UserID;
 
-        //  重複の排除
-        userdata.UserID = UsersContain(userdata);
-        if (userdata.UserID != null)
-            return userdata.UserID;
+            //  既存のものがなかったら新しく作成する
+            string newUserId = UserIdRandom();
 
-        //  既存のものがなかったら新しく作成する
-        var random = new Random();
-        const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-        string newUserID = new string(Enumerable.Repeat(chars, 10)
-            .Select(s => s[random.Next(s.Length)]).ToArray());
-        userdata.UserID = newUserID;
+            //  奇しくも重複していた時に再度UserIDを作成する
+            newUserId = UserIDContain(newUserId);
+
+            //  値を入れる
+            userdata.UserID = newUserId;
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine(ex.Message);
+            Debug.WriteLine(ex.StackTrace);
+            throw new Exception("インサート前確認エラー");
+        }
+
 
         try
         {
@@ -143,50 +151,123 @@ public class UsersDao
     }
 
     //  Usersテーブルの重複の排除　既にあればtrueなければfalse
-    public string UsersContain(Users userdata)
+    public string UserAgentContain(Users userdata)
     {
         StringBuilder sql = new StringBuilder();
         sql.Append("SELECT * FROM \"Users\" ")
             .Append("WHERE \"UserAgent\" = @user_agent");
-
-        NpgsqlCommand cmd = new NpgsqlCommand(sql.ToString(), conn);
-
-        //  パラメーターのセット
-        cmd.Parameters.AddWithValue("@user_agent", userdata.UserAgent);
-
-        ////  セレクト文の発行
-        //var command = conn.CreateCommand();
-        //command.CommandText = sql.ToString();
-
-        //  Readerを開く
-        using (NpgsqlDataReader reader = cmd.ExecuteReader())
+        try
         {
-            if (reader.HasRows)//  データを持っているかbool型)
+            NpgsqlCommand cmd = new NpgsqlCommand(sql.ToString(), conn);
+
+            //  パラメーターのセット
+            cmd.Parameters.AddWithValue("@user_agent", userdata.UserAgent);
+
+            //  Readerを開く
+            using (NpgsqlDataReader reader = cmd.ExecuteReader())
             {
-                while (reader.Read())   //  読込む
+                if (reader.HasRows)//  データを持っているかbool型)
                 {
-                    
-                    for (int i = 0; i < reader.FieldCount; i++)
+                    while (reader.Read())   //  読込む
                     {
-                        //  列名と値を取り出す
-                        string columnName = reader.GetName(i);
-                        object columnValue = reader[i];
 
-                        Debug.Write($"{columnName} : {columnValue.ToString()}  ");
+                        for (int i = 0; i < reader.FieldCount; i++)
+                        {
+                            //  列名と値を取り出す
+                            string columnName = reader.GetName(i);
+                            object columnValue = reader[i];
 
+                            Debug.Write($"{columnName} : {columnValue.ToString()}  ");
+
+                        }
+
+                        Users dto1 = new Users()
+                        {
+                            UserID = (string)reader["UserID"],
+                            UserAgent = (string)reader["UserAgent"],
+                            UserCreateDate = (DateTime)reader["UserCreateDate"]
+                        };
+                        return dto1.UserID;
                     }
 
-                    Users dto1 = new Users()
-                    {
-                        UserID = (string)reader["UserID"],
-                        UserAgent = (string)reader["UserAgent"],
-                        UserCreateDate = (DateTime)reader["UserCreateDate"]
-                    };
-                    return dto1.UserID;
                 }
-
             }
         }
+        catch (NpgsqlException ex)
+        {
+            Debug.WriteLine(ex.Message);
+            Debug.WriteLine(ex.StackTrace);
+            throw new Exception("インサートエラー");
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine(ex.Message);
+            Debug.WriteLine(ex.StackTrace);
+            throw new Exception("インサート処理エラー");
+        }
+        finally
+        {
+            conn?.Close();
+        }
+
+
         return null;
     }
+
+    public string UserIDContain(string userid)
+    {
+        StringBuilder sql = new StringBuilder();
+        sql.Append("SELECT * FROM \"Users\" ")
+            .Append("WHERE \"UserID\" = @user_id");
+
+        try
+        {
+            NpgsqlCommand cmd = new NpgsqlCommand(sql.ToString(), conn);
+
+            //  パラメーターのセット
+            cmd.Parameters.AddWithValue("@user_id", userid);
+
+            //  Readerを開く
+            using (NpgsqlDataReader reader = cmd.ExecuteReader())
+            {
+                if (reader.HasRows)//  データを持っているかbool型)
+                {
+                    while (reader.Read())   //  読込む
+                    {
+
+                        return UserIdRandom();
+                    }
+
+                }
+            }
+        }
+        catch (NpgsqlException ex)
+        {
+            Debug.WriteLine(ex.Message);
+            Debug.WriteLine(ex.StackTrace);
+            throw new Exception("インサートエラー");
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine(ex.Message);
+            Debug.WriteLine(ex.StackTrace);
+            throw new Exception("インサート処理エラー");
+        }
+        finally
+        {
+            conn?.Close();
+        }
+
+
+        return userid;
+    }
+    public string UserIdRandom()
+    {
+        var random = new Random();
+        string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+        string newUserID = new string(Enumerable.Repeat(chars, 10)
+            .Select(s => s[random.Next(s.Length)]).ToArray());
+        return newUserID;
+    }
+
 }

@@ -106,7 +106,6 @@ else
             try
             {
                 Msgs = await _context.Messages.Where(m => m.ThreadID == number).ToListAsync<Messages>();
-
             }
             catch (Exception ex)
             {
