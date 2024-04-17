@@ -69,10 +69,10 @@ public class UsersDao
         return false;
     }
 
-    public int Insert(Users userdata)
+    public string Insert(Users userdata)
     {
         NpgsqlTransaction transaction = null;
-        int result = 0;
+        string result = "";
 
         //  接続確認
         if (!Connection())
@@ -83,8 +83,16 @@ public class UsersDao
             return result;
 
         //  重複の排除
-        if (UsersContain(userdata))
-            return result;
+        userdata.UserID = UsersContain(userdata);
+        if (userdata.UserID != null)
+            return userdata.UserID;
+
+        //  既存のものがなかったら新しく作成する
+        var random = new Random();
+        const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+        string newUserID = new string(Enumerable.Repeat(chars, 10)
+            .Select(s => s[random.Next(s.Length)]).ToArray());
+        userdata.UserID = newUserID;
 
         try
         {
@@ -108,12 +116,12 @@ public class UsersDao
 
             //  TRANSACTION
             transaction = conn.BeginTransaction();
-            int lastid = (int)cmd.ExecuteScalar();
+            cmd.ExecuteScalar();
 
             //  TRANSACTIONコミット
             transaction.Commit();
 
-            return lastid;
+            return userdata.UserID;
         }
         catch (NpgsqlException ex)
         {
@@ -135,29 +143,50 @@ public class UsersDao
     }
 
     //  Usersテーブルの重複の排除　既にあればtrueなければfalse
-    public bool UsersContain(Users userdata)
+    public string UsersContain(Users userdata)
     {
         StringBuilder sql = new StringBuilder();
         sql.Append("SELECT * FROM \"Users\" ")
-            .Append("WHERE \"UserAgent\" = @user_agent)");
+            .Append("WHERE \"UserAgent\" = @user_agent");
 
         NpgsqlCommand cmd = new NpgsqlCommand(sql.ToString(), conn);
 
         //  パラメーターのセット
         cmd.Parameters.AddWithValue("@user_agent", userdata.UserAgent);
 
-        //  セレクト文の発行
-        var command = conn.CreateCommand();
-        command.CommandText = sql.ToString();
+        ////  セレクト文の発行
+        //var command = conn.CreateCommand();
+        //command.CommandText = sql.ToString();
 
         //  Readerを開く
-        using (NpgsqlDataReader reader = command.ExecuteReader())
+        using (NpgsqlDataReader reader = cmd.ExecuteReader())
         {
             if (reader.HasRows)//  データを持っているかbool型)
             {
-                return true;
+                while (reader.Read())   //  読込む
+                {
+                    
+                    for (int i = 0; i < reader.FieldCount; i++)
+                    {
+                        //  列名と値を取り出す
+                        string columnName = reader.GetName(i);
+                        object columnValue = reader[i];
+
+                        Debug.Write($"{columnName} : {columnValue.ToString()}  ");
+
+                    }
+
+                    Users dto1 = new Users()
+                    {
+                        UserID = (string)reader["UserID"],
+                        UserAgent = (string)reader["UserAgent"],
+                        UserCreateDate = (DateTime)reader["UserCreateDate"]
+                    };
+                    return dto1.UserID;
+                }
+
             }
         }
-        return false;
+        return null;
     }
 }

@@ -19,8 +19,8 @@
         <thead>
             <tr>
                 <th>MessageID</th>
-                 @* <th>MessageNumber</th>  *@
                 <th>本文DetailMessage</th>
+                <th>UserID</th>
             </tr>
         </thead>
 
@@ -29,8 +29,8 @@
             {
                 <tr>
                      <th>@item.MessageID</th> 
-                     @* <td>@item.MessageNumber</td>  *@
                      <td>@item.DetailMessage</td> 
+                     <td>@item.UserID</td>
                 </tr>
             }
         </tbody>
@@ -56,16 +56,14 @@ else
 
     private List<Messages> Msgs { get; set; }
     Messages msg = new Messages();
+    Users user = new Users();
 
     private NpgsqlConnection conn = null;
-    private MessagesDao dao;
+    private MessagesDao messagesDao;
+    private UsersDao usersDao;
 
     private async void OnCreateMessage()
     {
-        //  UAを追加する
-        var remoteUserAgent = await JSRuntime.InvokeAsync<string>("getUserAgent");
-        msg.UserID = remoteUserAgent;
-
         //  ThreadIDを追加する
         if (int.TryParse(CodeID, out int number))
         {
@@ -80,11 +78,19 @@ else
         DateTime dt = DateTime.Now;
         msg.PostTime = dt;
 
-        //  メッセージを作成する
-        dao.Insert(msg);
+        //  UAをuserに追加する
+        var remoteUserAgent = await JSRuntime.InvokeAsync<string>("getUserAgent");
+        user.UserAgent = remoteUserAgent;
+        user.UserCreateDate = dt;
 
-        // _context.Add(msg);
-        // _context.SaveChanges();
+        //  Userを作成する
+        string userdataID = usersDao.Insert(user);
+
+        //  メッセージにUserIDを打ち込む
+        msg.UserID = userdataID;
+
+        //  メッセージを作成する
+        messagesDao.Insert(msg);
 
         StringBuilder sb = new StringBuilder();
         sb.Append("/ThreadPage/")
@@ -114,14 +120,6 @@ else
         }
         daoConnection();
 
-        //  テスト用のデータを手動で打ち込む
-
-        // Msgs = new List<Messages>()
-        // {
-        //     //  ここに一つずつ書いていく(五つほど)
-        //     new Messages(),
-        //     new Messages(),
-        // };
 
     }
     private void daoConnection()
@@ -134,6 +132,7 @@ else
                 Password = "postgres"
             };
         conn = new NpgsqlConnection(builder.ConnectionString);
-        dao = new MessagesDao(conn);
+        messagesDao = new MessagesDao(conn);
+        usersDao = new UsersDao(conn);
     }
 }
