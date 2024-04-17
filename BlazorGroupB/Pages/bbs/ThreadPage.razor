@@ -1,5 +1,4 @@
 ﻿@page "/ThreadPage/{CodeID?}"
-
 @using BlazorGroupB.Data
 @using BlazorGroupB.Data.DAO;
 @using BlazorGroupB.Models
@@ -12,6 +11,8 @@
 @inject BlazorGroupBDbContext _context
 @inject NavigationManager NaviManager
 @inject IJSRuntime JSRuntime
+
+
 
 @if (Msgs != null && int.TryParse(CodeID, out int number))
 {

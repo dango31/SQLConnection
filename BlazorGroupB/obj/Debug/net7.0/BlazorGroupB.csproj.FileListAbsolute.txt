@@ -1170,3 +1170,12 @@ C:\Users\user\source\GithubGroupWork\BlazorGroupB\obj\Debug\net7.0\refint\Blazor
 C:\Users\user\source\GithubGroupWork\BlazorGroupB\obj\Debug\net7.0\BlazorGroupB.pdb
 C:\Users\user\source\GithubGroupWork\BlazorGroupB\obj\Debug\net7.0\BlazorGroupB.genruntimeconfig.cache
 C:\Users\user\source\GithubGroupWork\BlazorGroupB\obj\Debug\net7.0\ref\BlazorGroupB.dll
+C:\Users\user\source\GithubGroupWork\BlazorGroupB\bin\Debug\net7.0\Microsoft.AspNetCore.Connections.Abstractions.dll
+C:\Users\user\source\GithubGroupWork\BlazorGroupB\bin\Debug\net7.0\Microsoft.AspNetCore.Http.Connections.Client.dll
+C:\Users\user\source\GithubGroupWork\BlazorGroupB\bin\Debug\net7.0\Microsoft.AspNetCore.Http.Connections.Common.dll
+C:\Users\user\source\GithubGroupWork\BlazorGroupB\bin\Debug\net7.0\Microsoft.AspNetCore.SignalR.Client.dll
+C:\Users\user\source\GithubGroupWork\BlazorGroupB\bin\Debug\net7.0\Microsoft.AspNetCore.SignalR.Client.Core.dll
+C:\Users\user\source\GithubGroupWork\BlazorGroupB\bin\Debug\net7.0\Microsoft.AspNetCore.SignalR.Common.dll
+C:\Users\user\source\GithubGroupWork\BlazorGroupB\bin\Debug\net7.0\Microsoft.AspNetCore.SignalR.Protocols.Json.dll
+C:\Users\user\source\GithubGroupWork\BlazorGroupB\bin\Debug\net7.0\Microsoft.Extensions.Features.dll
+C:\Users\user\source\GithubGroupWork\BlazorGroupB\bin\Debug\net7.0\Microsoft.Extensions.Logging.Abstractions.dll

@@ -98,7 +98,6 @@ public class UsersDao
         {
             Debug.WriteLine(ex.Message);
             Debug.WriteLine(ex.StackTrace);
-            throw new Exception("インサート前確認エラー");
         }
 
 
