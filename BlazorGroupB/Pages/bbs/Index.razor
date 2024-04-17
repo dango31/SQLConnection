@@ -104,22 +104,9 @@ else
         Ths = await _contextThread.Threads.ToListAsync<Threads>();
         daoConnection();
 
-        //  テスト用のデータを手動で打ち込む
-
-        // Ths = new List<Threads>()
-        // {
-        //     //  ここに一つずつ書いていく(五つほど)
-        //     new Threads(),
-        //     new Threads(),
-
-
-        // };
-
-
     }
     private void daoConnection()
     {
-
 
         var builder = new NpgsqlConnectionStringBuilder
         {
