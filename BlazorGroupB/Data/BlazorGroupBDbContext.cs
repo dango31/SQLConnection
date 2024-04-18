@@ -17,5 +17,9 @@ public class BlazorGroupBDbContext : DbContext
 
     //  データベースからUsersテーブルの値を取り出す
     public DbSet<Users> Users { get; set; } = default!;
-    
+
+    //  データベースからUranaisテーブルの値を取り出す
+    public DbSet<Uranais> Uranais { get; set; } = default!;
+
+
 }

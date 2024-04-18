@@ -11,6 +11,7 @@
 @inject BlazorGroupBDbContext _contextThread
 @inject NavigationManager NaviManager
 
+<button class="btn btn-primary" @onclick="DoFortuneTelling">占い</button>
 <button class="btn btn-primary" @onclick="ReloadPage">再読み込み</button>
 <button class="btn btn-primary" @onclick="NewThread">スレッドの新規投稿</button>
 
@@ -166,5 +167,11 @@ else
     {
         afterSearch = Ths.FindAll(x => x.ThreadName.Contains(threadsSearch.searchString));
         searchbool = true;
+    }
+    public void DoFortuneTelling()
+    {
+        StringBuilder sb = new StringBuilder();
+        sb.Append("/UranaiPage");
+        NaviManager.NavigateTo(sb.ToString(), forceLoad: true);
     }
 }
