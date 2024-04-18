@@ -12,6 +12,8 @@
 @inject NavigationManager NaviManager
 @inject IJSRuntime JSRuntime
 
+<button class="btn btn-primary" @onclick="BackTopPage">トップページ</button>
+<button class="btn btn-primary" @onclick="ReloadPage">再読み込み</button>
 
 
 @if (Msgs != null && int.TryParse(CodeID, out int number))
@@ -42,10 +44,12 @@ else
 
 }
 
-<EditForm Model="@msg" OnSubmit="OnCreateMessage">
+<EditForm Model="@msg" OnSubmit="PostMessage">
     <div class="form-group">
         <label asp-for="msg.DetailMessage" class="control-label"></label>
         <input asp-for="msg.DetailMessage" class="form-control" @bind-value=@msg.DetailMessage />
+        <label asp-for="msg.WriteName" class="control-label"></label>
+        <input asp-for="msg.WriteName" class="form-control" @bind-value=@msg.WriteName />
     </div>
     <button class="btn btn-primary">Message送信</button>
 </EditForm>
@@ -63,7 +67,7 @@ else
     private MessagesDao messagesDao;
     private UsersDao usersDao;
 
-    private async void OnCreateMessage()
+    private async void PostMessage()
     {
         //  ThreadIDを追加する
         if (int.TryParse(CodeID, out int number))
@@ -93,10 +97,7 @@ else
         //  メッセージを作成する
         messagesDao.Insert(msg);
 
-        StringBuilder sb = new StringBuilder();
-        sb.Append("/ThreadPage/")
-            .Append(CodeID);
-        NaviManager.NavigateTo(sb.ToString(), forceLoad: true);
+        ReloadPage();
     }
 
     protected override async Task OnInitializedAsync()
@@ -134,5 +135,18 @@ else
         conn = new NpgsqlConnection(builder.ConnectionString);
         messagesDao = new MessagesDao(conn);
         usersDao = new UsersDao(conn);
+    }
+    public void BackTopPage()
+    {
+        StringBuilder sb = new StringBuilder();
+        sb.Append("/");
+        NaviManager.NavigateTo(sb.ToString(), forceLoad: true);
+    }
+    private void ReloadPage()
+    {
+        StringBuilder sb = new StringBuilder();
+        sb.Append("/ThreadPage/")
+            .Append(CodeID);
+        NaviManager.NavigateTo(sb.ToString(), forceLoad: true);
     }
 }

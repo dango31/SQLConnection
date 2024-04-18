@@ -11,6 +11,8 @@
 @inject NavigationManager NaviManager
 @inject IJSRuntime JSRuntime
 
+<button class="btn btn-primary" @onclick="BackTopPage">トップページ</button>
+
 <h1>クリエイトスレッドページ</h1>
 
 <EditForm Model="@tmc" OnSubmit="OnCreateThread">
@@ -26,8 +28,11 @@
     <button class="btn btn-primary">thread作成</button>
 </EditForm>
 
+<button class="btn btn-primary" @onclick="AllDelete">書き込み内容の削除</button>
+
+
 @code {
-    ThreadMessageClass tmc = new ThreadMessageClass();
+
     Users user = new Users();
     string userdataID = "";
 
@@ -36,12 +41,16 @@
     private MessagesDao messagesDao;
     private UsersDao usersDao;
 
+    public class ThreadMessageClass
+    {
+        public Messages? messages { get; set; } = new Messages();
+        public Threads? threads { get; set; } = new Threads();
+    }
+    ThreadMessageClass tmc = new ThreadMessageClass();
+
 
     private void OnCreateThread()
     {
-        daoConnection();
-        GetUserAgent();
-
         int number = NewThread();
         NewMessage(number);
 
@@ -80,7 +89,14 @@
         //  メッセージを作成する
         messagesDao.Insert(tmc.messages);
     }
-    private async void GetUserAgent()
+
+    protected override async Task OnInitializedAsync()
+    {
+        daoConnection();
+
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         //  UAをuserに追加する
         var remoteUserAgent = await JSRuntime.InvokeAsync<string>("getUserAgent");
@@ -109,5 +125,18 @@
         messagesDao = new MessagesDao(conn);
         usersDao = new UsersDao(conn);
 
+    }
+
+    private void BackTopPage()
+    {
+        StringBuilder sb = new StringBuilder();
+        sb.Append("/");
+        NaviManager.NavigateTo(sb.ToString(), forceLoad: true);
+    }
+    private void AllDelete()
+    {
+        tmc.threads.ThreadName = "";
+        tmc.messages.WriteName = "";
+        tmc.messages.DetailMessage = "";
     }
 }
