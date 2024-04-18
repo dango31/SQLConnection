@@ -1,0 +1,43 @@
+﻿@page "/UranaiPage"
+@using BlazorGroupB.Data
+@using BlazorGroupB.Data.DAO;
+@using BlazorGroupB.Models
+@using System.Text
+@using Microsoft.EntityFrameworkCore
+@using System.Configuration
+@using Npgsql
+@using System.Data
+@using System.Diagnostics
+@inject BlazorGroupB.Data.BlazorGroupBDbContext _contextUranais
+@inject NavigationManager NaviManager
+
+
+<button class="btn btn-primary" @onclick="BackTopPage">トップページ</button>
+<h3>今日の運勢は・・・@unOne.Fortune！</h3>
+
+@code {
+    List<Uranais> uranais { get; set; }
+    Random rn = new Random();
+    int fortuneNumber = 0;
+    Uranais unOne = new Uranais();
+
+    protected override async Task OnInitializedAsync()
+    {
+        RandomUranai();
+        //  データベースからデータを取り出す
+        uranais = await _contextUranais.Uranais.Where(m => m.UranaiID == fortuneNumber).ToListAsync<Uranais>();
+        unOne = uranais[0];
+    }
+
+    private void RandomUranai()
+    {
+        fortuneNumber = rn.Next(1, 7);
+    }
+
+    public void BackTopPage()
+    {
+        StringBuilder sb = new StringBuilder();
+        sb.Append("/");
+        NaviManager.NavigateTo(sb.ToString(), forceLoad: true);
+    }
+}

@@ -92,26 +92,12 @@ public class ThreadsDao
 
             //  パラメーターのセット
             cmd.Parameters.AddWithValue("@thread_name", ths.ThreadName);
-            //cmd.Parameters.AddWithValue("@thread_url", ths.ThreadUrl);
             cmd.Parameters.AddWithValue("@user_id", ths.UserID);
             cmd.Parameters.AddWithValue("@thread_create_date", ths.ThreadCreateDate);
 
             //  TRANSACTION
             transaction = conn.BeginTransaction();
             int lastid = (int)cmd.ExecuteScalar();
-
-            //  urlの変更
-            //int lastPlusOne = lastid + 1;
-
-            //string url = "/ThreadPage/" + lastid.ToString();
-
-            //string query = "UPDATE \"Threads\" SET \"ThreadUrl\" = @thread_url WHERE \"ThreadID\" = @thread_id";
-            //NpgsqlCommand command = new NpgsqlCommand(query, conn);
-            //command.Parameters.AddWithValue("@thread_url", url);
-            //command.Parameters.AddWithValue("@thread_id", lastid);
-            ////\"ThreadID\" = @thread_id,
-
-            //command.ExecuteNonQuery();
 
             //  TRANSACTIONコミット
             transaction.Commit();

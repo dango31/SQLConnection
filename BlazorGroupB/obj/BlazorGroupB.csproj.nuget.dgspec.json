@@ -1,20 +1,24 @@
 {
   "format": 1,
   "restore": {
-    "D:\\Group_B\\SourceCode\\0409,16時37BlazorGroupB\\BlazorGroupB\\BlazorGroupB\\BlazorGroupB.csproj": {}
+    "C:\\Users\\user\\source\\GithubGroupWork\\BlazorGroupB\\BlazorGroupB.csproj": {}
   },
   "projects": {
-    "D:\\Group_B\\SourceCode\\0409,16時37BlazorGroupB\\BlazorGroupB\\BlazorGroupB\\BlazorGroupB.csproj": {
+    "C:\\Users\\user\\source\\GithubGroupWork\\BlazorGroupB\\BlazorGroupB.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\Group_B\\SourceCode\\0409,16時37BlazorGroupB\\BlazorGroupB\\BlazorGroupB\\BlazorGroupB.csproj",
+        "projectUniqueName": "C:\\Users\\user\\source\\GithubGroupWork\\BlazorGroupB\\BlazorGroupB.csproj",
         "projectName": "BlazorGroupB",
-        "projectPath": "D:\\Group_B\\SourceCode\\0409,16時37BlazorGroupB\\BlazorGroupB\\BlazorGroupB\\BlazorGroupB.csproj",
+        "projectPath": "C:\\Users\\user\\source\\GithubGroupWork\\BlazorGroupB\\BlazorGroupB.csproj",
         "packagesPath": "C:\\Users\\user\\.nuget\\packages\\",
-        "outputPath": "D:\\Group_B\\SourceCode\\0409,16時37BlazorGroupB\\BlazorGroupB\\BlazorGroupB\\obj\\",
+        "outputPath": "C:\\Users\\user\\source\\GithubGroupWork\\BlazorGroupB\\obj\\",
         "projectStyle": "PackageReference",
+        "fallbackFolders": [
+          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+        ],
         "configFilePaths": [
           "C:\\Users\\user\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
         "originalTargetFrameworks": [
@@ -34,11 +38,6 @@
           "warnAsError": [
             "NU1605"
           ]
-        },
-        "restoreAuditProperties": {
-          "enableAudit": "true",
-          "auditLevel": "low",
-          "auditMode": "direct"
         }
       },
       "frameworks": {
@@ -48,6 +47,10 @@
             "Microsoft.AspNetCore.Identity.UI": {
               "target": "Package",
               "version": "[7.0.17, )"
+            },
+            "Microsoft.AspNetCore.SignalR.Client": {
+              "target": "Package",
+              "version": "[7.0.18, )"
             },
             "Microsoft.EntityFrameworkCore": {
               "target": "Package",
@@ -109,7 +112,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.203\\RuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\7.0.406\\RuntimeIdentifierGraph.json"
         }
       }
     }
