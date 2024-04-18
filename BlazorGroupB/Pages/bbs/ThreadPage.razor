@@ -8,6 +8,9 @@
 @using Npgsql
 @using System.Data
 @using System.Diagnostics
+@using Microsoft.AspNetCore.Mvc.Rendering
+@using Microsoft.AspNetCore.SignalR.Client
+@implements IAsyncDisposable
 @inject BlazorGroupBDbContext _context
 @inject NavigationManager NaviManager
 @inject IJSRuntime JSRuntime
@@ -44,7 +47,7 @@ else
 
 }
 
-<EditForm Model="@msg" OnSubmit="PostMessage">
+<EditForm Model="@msg" OnSubmit="Send">
     <div class="form-group">
         <label asp-for="msg.DetailMessage" class="control-label"></label>
         <input asp-for="msg.DetailMessage" class="form-control" @bind-value=@msg.DetailMessage />
@@ -59,13 +62,17 @@ else
     [Parameter]
     public string CodeID { get; set; }
 
-    private List<Messages> Msgs { get; set; }
+    private List<Messages> Msgs { get; set; } = new List<Messages>();
     Messages msg = new Messages();
     Users user = new Users();
+    string userdataID = "";
 
     private NpgsqlConnection conn = null;
     private MessagesDao messagesDao;
     private UsersDao usersDao;
+
+    //  追加
+    private HubConnection? hubConnection;
 
     private async void PostMessage()
     {
@@ -83,14 +90,6 @@ else
         DateTime dt = DateTime.Now;
         msg.PostTime = dt;
 
-        //  UAをuserに追加する
-        var remoteUserAgent = await JSRuntime.InvokeAsync<string>("getUserAgent");
-        user.UserAgent = remoteUserAgent;
-        user.UserCreateDate = dt;
-
-        //  Userを作成する
-        string userdataID = usersDao.Insert(user);
-
         //  メッセージにUserIDを打ち込む
         msg.UserID = userdataID;
 
@@ -100,29 +99,6 @@ else
         ReloadPage();
     }
 
-    protected override async Task OnInitializedAsync()
-    {
-        //  データベースから値を取り出す
-        if (int.TryParse(CodeID, out int number))
-        {
-            try
-            {
-                Msgs = await _context.Messages.Where(m => m.ThreadID == number).ToListAsync<Messages>();
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine(ex.Message);
-            }
-
-        }
-        else
-        {
-            Msgs = await _context.Messages.ToListAsync<Messages>();
-        }
-        daoConnection();
-
-
-    }
     private void daoConnection()
     {
         var builder = new NpgsqlConnectionStringBuilder
@@ -148,5 +124,79 @@ else
         sb.Append("/ThreadPage/")
             .Append(CodeID);
         NaviManager.NavigateTo(sb.ToString(), forceLoad: true);
+    }
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+
+            daoConnection();
+            //  UAをuserに追加する
+            var remoteUserAgent = await JSRuntime.InvokeAsync<string>("getUserAgent");
+            user.UserAgent = remoteUserAgent;
+            user.UserCreateDate = DateTime.Now;
+
+            //  Userを作成する
+            userdataID = usersDao.Insert(user);
+
+    }
+
+    //追加項目
+
+    protected override async Task OnInitializedAsync()
+    {
+        //  ハブコネクションの接続の構築
+        hubConnection = new HubConnectionBuilder()
+            .WithUrl(NaviManager.ToAbsoluteUri("/chathub"))
+            .Build();
+
+        //  受信したデータをメッセージリストに追加している
+        //  最後にInvokeAsync(StateHasChanged)を呼び出すことで
+        // blazorに通知され、UIが更新される
+        hubConnection.On<Messages>("ReceiveMessage", (msg) =>
+        {
+            Msgs.Add(msg);
+            InvokeAsync(StateHasChanged);
+        });
+        //  データベースから値を取り出す
+        if (int.TryParse(CodeID, out int number))
+        {
+            try
+            {
+                Msgs = await _context.Messages.Where(m => m.ThreadID == number).ToListAsync<Messages>();
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex.Message);
+            }
+
+        }
+        else
+        {
+            Msgs = await _context.Messages.ToListAsync<Messages>();
+        }
+        await hubConnection.StartAsync();
+    }
+
+    //  Hubに送信します
+    private async Task Send()
+    {
+        PostMessage();
+
+        if (hubConnection is not null)
+        {
+            await hubConnection.SendAsync("SendMessage", msg);
+        }
+    }
+
+    //  Sendボタンが有効か無効かの判定
+    public bool IsConnected =>
+    hubConnection?.State == HubConnectionState.Connected;
+
+    //  不要のリソースを解放し、メモリリークを防ぐために重要
+    public async ValueTask DisposeAsync()
+    {
+        if (hubConnection is not null)
+        {
+            await hubConnection.DisposeAsync();
+        }
     }
 }
