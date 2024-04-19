@@ -15,8 +15,41 @@
 
 <h1>クリエイトスレッドページ</h1>
 
+<div class="thread-creation-page">
+    <!-- ヘッダー部分 -->
+    <div class="purple-band d-flex justify-content-between align-items-center">
+        <button class="btn btn-primary rounded-pill" @onclick="BackTopPage">トップページへ</button>
+        <h1 class="text-white mx-auto">ABCチャンネル</h1>
+    </div>
+    <!-- スレッド作成フォーム -->
+    <div class="thread-creation-form">
+        <h2>スレッド作成</h2>
+        <!-- タイトル入力欄 -->
+        <div class="input-group">
+            <label for="title">タイトル：</label>
+            <input @bind="title" id="title" type="text" maxlength="20" />
+        </div>
+        <!-- 投稿内容入力欄 -->
+        <div class="input-group">
+            <label for="content" class="textarea-label">投稿内容：</label>
+            <textarea @bind="content" id="content" rows="4"></textarea>
+        </div>
+        <!-- 名前入力欄 -->
+        <div class="input-group">
+            <label for="nickname">名前(ニックネーム)：</label>
+            <input @bind="nickname" id="nickname" type="text" />
+        </div>
+        <div class="button-group">
+            <!-- 全クリアボタン -->
+            <button @onclick="ClearContent" class="clear-button">全クリア</button>
+            <!-- スレッド作成ボタン -->
+            <button @onclick="OnCreateThread" class="create-thread-button">スレッド作成</button>
+        </div>
+    </div>
+</div>
+
 @* 入力欄 *@
-<EditForm Model="@tmc" OnSubmit="OnCreateThread">
+@* <EditForm Model="@tmc" OnSubmit="OnCreateThread">
     <div class="form-group">
         <label asp-for="tmc.threads.ThreadName" class="control-label"></label>
         <input asp-for="tmc.threads.ThreadName" class="form-control" @bind-value=@tmc.threads.ThreadName />
@@ -27,12 +60,17 @@
     </div>
     
     <button class="btn btn-primary">thread作成</button>
-</EditForm>
+</EditForm> *@
 
-<button class="btn btn-primary" @onclick="AllDelete">書き込み内容の削除</button>
+
 
 
 @code {
+
+    private string title = "";
+    private string content = "";
+    private string nickname = "";
+
     //  Usersクラスのインスタンス化
     Users user = new Users();
     //  ユーザーIDの保持
@@ -57,9 +95,13 @@
     /// </summary>
     private void OnCreateThread()
     {
-        if (tmc.threads.ThreadName == null)
+        if (title == null || content == null)
             return;
 
+        //  クラスに値を入れ込む
+        tmc.threads.ThreadName = title;
+        tmc.messages.WriteName = nickname;
+        tmc.messages.DetailMessage = content;
 
         //  スレッドとメッセージを新規で作成する
         int number = NewThread();
@@ -172,10 +214,11 @@
     /// <summary>
     /// 書き込み内容を全てクリアする
     /// </summary>
-    private void AllDelete()
+    private void ClearContent()
     {
-        tmc.threads.ThreadName = "";
-        tmc.messages.WriteName = "";
-        tmc.messages.DetailMessage = "";
+        // タイトル、投稿内容、名前の各入力欄を空にする
+        title = "";
+        content = "";
+        nickname = "";
     }
 }

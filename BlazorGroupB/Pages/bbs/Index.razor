@@ -11,74 +11,61 @@
 @inject BlazorGroupBDbContext _contextThread
 @inject NavigationManager NaviManager
 
-@* 各種ボタン *@
-<button class="btn btn-primary" @onclick="DoFortuneTelling">占い</button>
-<button class="btn btn-primary" @onclick="ReloadPage">再読み込み</button>
-<button class="btn btn-primary" @onclick="NewThread">スレッドの新規投稿</button>
-
-@* 検索機能 *@
-<div class="form-group">
-    <label>
-        User:
-        <input @bind="searchString" />
-    </label>
+<div class="banner">
+    <div class="channel-name text-center" style="font-size: 50px;">
+        @ChannelName <!-- チャンネル名を表示 -->
+    </div>
 </div>
-<button @onclick="SelectSearch" >検索ボタン</button>
 
-@* スレッド一覧の表示 *@
+<div class="buttons">
+    <button @onclick="DoFortuneTelling" class="buttons special" style="font-size: 16px; width: 100px; padding: 15px 30px;">占い</button>
+    <button @onclick="ReloadPage" style="font-size: 16px; width: 170px; padding: 15px 30px;">再読み込み</button>
+</div>
+
+<div class="search">
+    <button @onclick="NewThread" style="font-size: 16px; width: 250px; padding: 15px 30px;">新規スレッド投稿</button>
+    <!-- 検索用の入力欄 -->
+    <input type="text" @bind="searchString" placeholder="検索">
+    <!-- 検索ボタン -->
+    <button @onclick="SelectSearch" class="button">検索</button>
+</div>
+
+
+<!-- メッセージ一覧 -->
 @if (Ths != null && !searchbool)
 {
-    <table class="table">
-        <thead>
-            <tr>
-                <th>ThreadID</th>
-                <th>ThreadName</th>
-            </tr>
-        </thead>
-
-        <tbody>
-            @foreach (var item in Ths)
-            {
-                <tr>
-
-                    <td>@item.ThreadID</td>
-                    <td><a href="/ThreadPage/@item.ThreadID">@item.ThreadName</a> </td>
-                </tr>
-            }
-        </tbody>
-    </table>
+    @foreach (var th in Ths)
+    {
+        
+        <div class="message-container border rounded p-3 mt-3">
+            <a href="/ThreadPage/@th.ThreadID">
+            <div class="d-flex justify-content-between">
+                <div>@th.ThreadName</div>
+                <div>@th.ThreadID</div>
+            </div>
+            </a>
+        </div>
+    }
 }
-@* 検索後の表示 *@
 else if (searchbool)
 {
-    <table class="table">
-        <thead>
-            <tr>
-                <th>ThreadID</th>
-                <th>ThreadName</th>
+    @foreach (var th in afterSearch)
+    {
 
-            </tr>
-        </thead>
-
-        <tbody>
-            @foreach (var item in afterSearch)
-            {
-                <tr>
-
-                    <td>@item.ThreadID</td>
-                    <td><a href="/ThreadPage/@item.ThreadID">@item.ThreadName</a> </td>
-
-                </tr>
-            }
-        </tbody>
-    </table>
+        <div class="message-container border rounded p-3 mt-3">
+            <a href="/ThreadPage/@th.ThreadID">
+                <div class="d-flex justify-content-between">
+                    <div>@th.ThreadName</div>
+                    <div>@th.ThreadID</div>
+                </div>
+            </a>
+        </div>
+    }
 }
 else
 {
-    <div class="text-primary">No-Data...</div>
+    <div class="text-primary mt-3">No Data...</div>
 }
-
-
 
 @code {
     //  スレッド一覧のデータを保持するList
@@ -92,6 +79,9 @@ else
 
     //  検索文字の保持
     string searchString;
+
+    // チャンネル名を保持するプロパティ
+    private string ChannelName { get; set; } = "エール第一チャンネル";
 
     /// <summary>
     /// 開かれたら最初に起動される

@@ -1,6 +1,6 @@
 {
   "Version": 1,
-  "Hash": "iFbaivMkTnQ9MUehHRVLV1T+NaqbVHAWYMVDXj57lxk=",
+  "Hash": "KjYyN091nyNhB1PCaOAlNcmZ/dBMuopt9wOCtXIsEeI=",
   "Source": "BlazorGroupB",
   "BasePath": "_content/BlazorGroupB",
   "Mode": "Default",
@@ -10,7 +10,7 @@
     {
       "Name": "BlazorGroupB\\wwwroot",
       "Source": "BlazorGroupB",
-      "ContentRoot": "C:\\Users\\user\\source\\NewGithub\\BlazorGroupB\\wwwroot\\",
+      "ContentRoot": "C:\\Users\\user\\source\\GitVer1.5\\BlazorGroupB\\wwwroot\\",
       "BasePath": "_content/BlazorGroupB",
       "Pattern": "**"
     }
@@ -1037,10 +1037,10 @@
       "OriginalItemSpec": "C:\\Users\\user\\.nuget\\packages\\microsoft.aspnetcore.identity.ui\\7.0.17\\staticwebassets\\V5\\lib\\jquery-validation-unobtrusive\\LICENSE.txt"
     },
     {
-      "Identity": "C:\\Users\\user\\source\\NewGithub\\BlazorGroupB\\obj\\Debug\\net7.0\\scopedcss\\bundle\\BlazorGroupB.styles.css",
+      "Identity": "C:\\Users\\user\\source\\GitVer1.5\\BlazorGroupB\\obj\\Debug\\net7.0\\scopedcss\\bundle\\BlazorGroupB.styles.css",
       "SourceId": "BlazorGroupB",
       "SourceType": "Computed",
-      "ContentRoot": "C:\\Users\\user\\source\\NewGithub\\BlazorGroupB\\obj\\Debug\\net7.0\\scopedcss\\bundle\\",
+      "ContentRoot": "C:\\Users\\user\\source\\GitVer1.5\\BlazorGroupB\\obj\\Debug\\net7.0\\scopedcss\\bundle\\",
       "BasePath": "_content/BlazorGroupB",
       "RelativePath": "BlazorGroupB.styles.css",
       "AssetKind": "All",
@@ -1051,13 +1051,13 @@
       "AssetTraitValue": "ApplicationBundle",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "C:\\Users\\user\\source\\NewGithub\\BlazorGroupB\\obj\\Debug\\net7.0\\scopedcss\\bundle\\BlazorGroupB.styles.css"
+      "OriginalItemSpec": "C:\\Users\\user\\source\\GitVer1.5\\BlazorGroupB\\obj\\Debug\\net7.0\\scopedcss\\bundle\\BlazorGroupB.styles.css"
     },
     {
-      "Identity": "C:\\Users\\user\\source\\NewGithub\\BlazorGroupB\\obj\\Debug\\net7.0\\scopedcss\\projectbundle\\BlazorGroupB.bundle.scp.css",
+      "Identity": "C:\\Users\\user\\source\\GitVer1.5\\BlazorGroupB\\obj\\Debug\\net7.0\\scopedcss\\projectbundle\\BlazorGroupB.bundle.scp.css",
       "SourceId": "BlazorGroupB",
       "SourceType": "Computed",
-      "ContentRoot": "C:\\Users\\user\\source\\NewGithub\\BlazorGroupB\\obj\\Debug\\net7.0\\scopedcss\\projectbundle\\",
+      "ContentRoot": "C:\\Users\\user\\source\\GitVer1.5\\BlazorGroupB\\obj\\Debug\\net7.0\\scopedcss\\projectbundle\\",
       "BasePath": "_content/BlazorGroupB",
       "RelativePath": "BlazorGroupB.bundle.scp.css",
       "AssetKind": "All",
@@ -1068,13 +1068,13 @@
       "AssetTraitValue": "ProjectBundle",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "C:\\Users\\user\\source\\NewGithub\\BlazorGroupB\\obj\\Debug\\net7.0\\scopedcss\\projectbundle\\BlazorGroupB.bundle.scp.css"
+      "OriginalItemSpec": "C:\\Users\\user\\source\\GitVer1.5\\BlazorGroupB\\obj\\Debug\\net7.0\\scopedcss\\projectbundle\\BlazorGroupB.bundle.scp.css"
     },
     {
-      "Identity": "C:\\Users\\user\\source\\NewGithub\\BlazorGroupB\\wwwroot\\css\\bootstrap\\bootstrap.min.css",
+      "Identity": "C:\\Users\\user\\source\\GitVer1.5\\BlazorGroupB\\wwwroot\\css\\bootstrap\\bootstrap.min.css",
       "SourceId": "BlazorGroupB",
       "SourceType": "Discovered",
-      "ContentRoot": "C:\\Users\\user\\source\\NewGithub\\BlazorGroupB\\wwwroot\\",
+      "ContentRoot": "C:\\Users\\user\\source\\GitVer1.5\\BlazorGroupB\\wwwroot\\",
       "BasePath": "_content/BlazorGroupB",
       "RelativePath": "css/bootstrap/bootstrap.min.css",
       "AssetKind": "All",
@@ -1088,10 +1088,10 @@
       "OriginalItemSpec": "wwwroot\\css\\bootstrap\\bootstrap.min.css"
     },
     {
-      "Identity": "C:\\Users\\user\\source\\NewGithub\\BlazorGroupB\\wwwroot\\css\\bootstrap\\bootstrap.min.css.map",
+      "Identity": "C:\\Users\\user\\source\\GitVer1.5\\BlazorGroupB\\wwwroot\\css\\bootstrap\\bootstrap.min.css.map",
       "SourceId": "BlazorGroupB",
       "SourceType": "Discovered",
-      "ContentRoot": "C:\\Users\\user\\source\\NewGithub\\BlazorGroupB\\wwwroot\\",
+      "ContentRoot": "C:\\Users\\user\\source\\GitVer1.5\\BlazorGroupB\\wwwroot\\",
       "BasePath": "_content/BlazorGroupB",
       "RelativePath": "css/bootstrap/bootstrap.min.css.map",
       "AssetKind": "All",
@@ -1105,10 +1105,10 @@
       "OriginalItemSpec": "wwwroot\\css\\bootstrap\\bootstrap.min.css.map"
     },
     {
-      "Identity": "C:\\Users\\user\\source\\NewGithub\\BlazorGroupB\\wwwroot\\css\\open-iconic\\font\\css\\open-iconic-bootstrap.min.css",
+      "Identity": "C:\\Users\\user\\source\\GitVer1.5\\BlazorGroupB\\wwwroot\\css\\open-iconic\\font\\css\\open-iconic-bootstrap.min.css",
       "SourceId": "BlazorGroupB",
       "SourceType": "Discovered",
-      "ContentRoot": "C:\\Users\\user\\source\\NewGithub\\BlazorGroupB\\wwwroot\\",
+      "ContentRoot": "C:\\Users\\user\\source\\GitVer1.5\\BlazorGroupB\\wwwroot\\",
       "BasePath": "_content/BlazorGroupB",
       "RelativePath": "css/open-iconic/font/css/open-iconic-bootstrap.min.css",
       "AssetKind": "All",
@@ -1122,10 +1122,10 @@
       "OriginalItemSpec": "wwwroot\\css\\open-iconic\\font\\css\\open-iconic-bootstrap.min.css"
     },
     {
-      "Identity": "C:\\Users\\user\\source\\NewGithub\\BlazorGroupB\\wwwroot\\css\\open-iconic\\font\\fonts\\open-iconic.eot",
+      "Identity": "C:\\Users\\user\\source\\GitVer1.5\\BlazorGroupB\\wwwroot\\css\\open-iconic\\font\\fonts\\open-iconic.eot",
       "SourceId": "BlazorGroupB",
       "SourceType": "Discovered",
-      "ContentRoot": "C:\\Users\\user\\source\\NewGithub\\BlazorGroupB\\wwwroot\\",
+      "ContentRoot": "C:\\Users\\user\\source\\GitVer1.5\\BlazorGroupB\\wwwroot\\",
       "BasePath": "_content/BlazorGroupB",
       "RelativePath": "css/open-iconic/font/fonts/open-iconic.eot",
       "AssetKind": "All",
@@ -1139,10 +1139,10 @@
       "OriginalItemSpec": "wwwroot\\css\\open-iconic\\font\\fonts\\open-iconic.eot"
     },
     {
-      "Identity": "C:\\Users\\user\\source\\NewGithub\\BlazorGroupB\\wwwroot\\css\\open-iconic\\font\\fonts\\open-iconic.otf",
+      "Identity": "C:\\Users\\user\\source\\GitVer1.5\\BlazorGroupB\\wwwroot\\css\\open-iconic\\font\\fonts\\open-iconic.otf",
       "SourceId": "BlazorGroupB",
       "SourceType": "Discovered",
-      "ContentRoot": "C:\\Users\\user\\source\\NewGithub\\BlazorGroupB\\wwwroot\\",
+      "ContentRoot": "C:\\Users\\user\\source\\GitVer1.5\\BlazorGroupB\\wwwroot\\",
       "BasePath": "_content/BlazorGroupB",
       "RelativePath": "css/open-iconic/font/fonts/open-iconic.otf",
       "AssetKind": "All",
@@ -1156,10 +1156,10 @@
       "OriginalItemSpec": "wwwroot\\css\\open-iconic\\font\\fonts\\open-iconic.otf"
     },
     {
-      "Identity": "C:\\Users\\user\\source\\NewGithub\\BlazorGroupB\\wwwroot\\css\\open-iconic\\font\\fonts\\open-iconic.svg",
+      "Identity": "C:\\Users\\user\\source\\GitVer1.5\\BlazorGroupB\\wwwroot\\css\\open-iconic\\font\\fonts\\open-iconic.svg",
       "SourceId": "BlazorGroupB",
       "SourceType": "Discovered",
-      "ContentRoot": "C:\\Users\\user\\source\\NewGithub\\BlazorGroupB\\wwwroot\\",
+      "ContentRoot": "C:\\Users\\user\\source\\GitVer1.5\\BlazorGroupB\\wwwroot\\",
       "BasePath": "_content/BlazorGroupB",
       "RelativePath": "css/open-iconic/font/fonts/open-iconic.svg",
       "AssetKind": "All",
@@ -1173,10 +1173,10 @@
       "OriginalItemSpec": "wwwroot\\css\\open-iconic\\font\\fonts\\open-iconic.svg"
     },
     {
-      "Identity": "C:\\Users\\user\\source\\NewGithub\\BlazorGroupB\\wwwroot\\css\\open-iconic\\font\\fonts\\open-iconic.ttf",
+      "Identity": "C:\\Users\\user\\source\\GitVer1.5\\BlazorGroupB\\wwwroot\\css\\open-iconic\\font\\fonts\\open-iconic.ttf",
       "SourceId": "BlazorGroupB",
       "SourceType": "Discovered",
-      "ContentRoot": "C:\\Users\\user\\source\\NewGithub\\BlazorGroupB\\wwwroot\\",
+      "ContentRoot": "C:\\Users\\user\\source\\GitVer1.5\\BlazorGroupB\\wwwroot\\",
       "BasePath": "_content/BlazorGroupB",
       "RelativePath": "css/open-iconic/font/fonts/open-iconic.ttf",
       "AssetKind": "All",
@@ -1190,10 +1190,10 @@
       "OriginalItemSpec": "wwwroot\\css\\open-iconic\\font\\fonts\\open-iconic.ttf"
     },
     {
-      "Identity": "C:\\Users\\user\\source\\NewGithub\\BlazorGroupB\\wwwroot\\css\\open-iconic\\font\\fonts\\open-iconic.woff",
+      "Identity": "C:\\Users\\user\\source\\GitVer1.5\\BlazorGroupB\\wwwroot\\css\\open-iconic\\font\\fonts\\open-iconic.woff",
       "SourceId": "BlazorGroupB",
       "SourceType": "Discovered",
-      "ContentRoot": "C:\\Users\\user\\source\\NewGithub\\BlazorGroupB\\wwwroot\\",
+      "ContentRoot": "C:\\Users\\user\\source\\GitVer1.5\\BlazorGroupB\\wwwroot\\",
       "BasePath": "_content/BlazorGroupB",
       "RelativePath": "css/open-iconic/font/fonts/open-iconic.woff",
       "AssetKind": "All",
@@ -1207,10 +1207,10 @@
       "OriginalItemSpec": "wwwroot\\css\\open-iconic\\font\\fonts\\open-iconic.woff"
     },
     {
-      "Identity": "C:\\Users\\user\\source\\NewGithub\\BlazorGroupB\\wwwroot\\css\\open-iconic\\FONT-LICENSE",
+      "Identity": "C:\\Users\\user\\source\\GitVer1.5\\BlazorGroupB\\wwwroot\\css\\open-iconic\\FONT-LICENSE",
       "SourceId": "BlazorGroupB",
       "SourceType": "Discovered",
-      "ContentRoot": "C:\\Users\\user\\source\\NewGithub\\BlazorGroupB\\wwwroot\\",
+      "ContentRoot": "C:\\Users\\user\\source\\GitVer1.5\\BlazorGroupB\\wwwroot\\",
       "BasePath": "_content/BlazorGroupB",
       "RelativePath": "css/open-iconic/FONT-LICENSE",
       "AssetKind": "All",
@@ -1224,10 +1224,10 @@
       "OriginalItemSpec": "wwwroot\\css\\open-iconic\\FONT-LICENSE"
     },
     {
-      "Identity": "C:\\Users\\user\\source\\NewGithub\\BlazorGroupB\\wwwroot\\css\\open-iconic\\ICON-LICENSE",
+      "Identity": "C:\\Users\\user\\source\\GitVer1.5\\BlazorGroupB\\wwwroot\\css\\open-iconic\\ICON-LICENSE",
       "SourceId": "BlazorGroupB",
       "SourceType": "Discovered",
-      "ContentRoot": "C:\\Users\\user\\source\\NewGithub\\BlazorGroupB\\wwwroot\\",
+      "ContentRoot": "C:\\Users\\user\\source\\GitVer1.5\\BlazorGroupB\\wwwroot\\",
       "BasePath": "_content/BlazorGroupB",
       "RelativePath": "css/open-iconic/ICON-LICENSE",
       "AssetKind": "All",
@@ -1241,10 +1241,10 @@
       "OriginalItemSpec": "wwwroot\\css\\open-iconic\\ICON-LICENSE"
     },
     {
-      "Identity": "C:\\Users\\user\\source\\NewGithub\\BlazorGroupB\\wwwroot\\css\\open-iconic\\README.md",
+      "Identity": "C:\\Users\\user\\source\\GitVer1.5\\BlazorGroupB\\wwwroot\\css\\open-iconic\\README.md",
       "SourceId": "BlazorGroupB",
       "SourceType": "Discovered",
-      "ContentRoot": "C:\\Users\\user\\source\\NewGithub\\BlazorGroupB\\wwwroot\\",
+      "ContentRoot": "C:\\Users\\user\\source\\GitVer1.5\\BlazorGroupB\\wwwroot\\",
       "BasePath": "_content/BlazorGroupB",
       "RelativePath": "css/open-iconic/README.md",
       "AssetKind": "All",
@@ -1258,10 +1258,10 @@
       "OriginalItemSpec": "wwwroot\\css\\open-iconic\\README.md"
     },
     {
-      "Identity": "C:\\Users\\user\\source\\NewGithub\\BlazorGroupB\\wwwroot\\css\\site.css",
+      "Identity": "C:\\Users\\user\\source\\GitVer1.5\\BlazorGroupB\\wwwroot\\css\\site.css",
       "SourceId": "BlazorGroupB",
       "SourceType": "Discovered",
-      "ContentRoot": "C:\\Users\\user\\source\\NewGithub\\BlazorGroupB\\wwwroot\\",
+      "ContentRoot": "C:\\Users\\user\\source\\GitVer1.5\\BlazorGroupB\\wwwroot\\",
       "BasePath": "_content/BlazorGroupB",
       "RelativePath": "css/site.css",
       "AssetKind": "All",
@@ -1275,10 +1275,10 @@
       "OriginalItemSpec": "wwwroot\\css\\site.css"
     },
     {
-      "Identity": "C:\\Users\\user\\source\\NewGithub\\BlazorGroupB\\wwwroot\\favicon.png",
+      "Identity": "C:\\Users\\user\\source\\GitVer1.5\\BlazorGroupB\\wwwroot\\favicon.png",
       "SourceId": "BlazorGroupB",
       "SourceType": "Discovered",
-      "ContentRoot": "C:\\Users\\user\\source\\NewGithub\\BlazorGroupB\\wwwroot\\",
+      "ContentRoot": "C:\\Users\\user\\source\\GitVer1.5\\BlazorGroupB\\wwwroot\\",
       "BasePath": "_content/BlazorGroupB",
       "RelativePath": "favicon.png",
       "AssetKind": "All",
