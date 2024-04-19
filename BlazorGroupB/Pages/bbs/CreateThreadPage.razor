@@ -57,8 +57,13 @@
     /// </summary>
     private void OnCreateThread()
     {
+        if (tmc.threads.ThreadName == null)
+            return;
+
+
+        //  スレッドとメッセージを新規で作成する
         int number = NewThread();
-        NewMessage(number);
+        PostMessage(number);
 
         // //  そのurlにジャンプする
         string url = "/ThreadPage/" + number.ToString();
@@ -89,7 +94,7 @@
     /// メッセージを作成する
     /// </summary>
     /// <param name="number"></param>
-    private void NewMessage(int number)
+    private void PostMessage(int number)
     {
         //  ThreadIDを追加する
         tmc.messages.ThreadID = number;

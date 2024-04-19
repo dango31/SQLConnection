@@ -74,22 +74,27 @@ public class UsersDao
         {
             //  接続確認
             if (!Connection())
-                return result;
+                throw new Exception("NpgSqlの接続に失敗しました");
 
             //  DTOの確認
             if (userdata == null)
-                return result;
+                throw new Exception("ユーザー情報の取得に失敗しました");
 
             //  重複の排除
             userdata.UserID = UserAgentContain(userdata);
             if (userdata.UserID != null)
                 return userdata.UserID;
 
-            //  既存のものがなかったら新しく作成する
-            string newUserId = UserIdRandom();
+            string newUserId;
+            while (true)
+            {
+                //  既存のものがなかったら新しく作成する
+                newUserId = UserIdRandom();
 
-            //  奇しくも重複していた時に再度UserIDを作成する
-            newUserId = UserIDContain(newUserId);
+                //  奇しくも重複していた時に再度UserIDを作成する。被っていないならbreak
+                if (!UserIDContain(newUserId))
+                    break;
+            }
 
             //  値を入れる
             userdata.UserID = newUserId;
@@ -213,7 +218,7 @@ public class UsersDao
         return null;
     }
 
-    public string UserIDContain(string userid)
+    public bool UserIDContain(string userid)
     {
         StringBuilder sql = new StringBuilder();
         sql.Append("SELECT * FROM \"Users\" ")
@@ -234,7 +239,7 @@ public class UsersDao
                     while (reader.Read())   //  読込む
                     {
 
-                        return UserIdRandom();
+                        return true;
                     }
 
                 }
@@ -258,7 +263,7 @@ public class UsersDao
         }
 
 
-        return userid;
+        return false;
     }
     public string UserIdRandom()
     {

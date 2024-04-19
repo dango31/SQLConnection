@@ -29,6 +29,7 @@
         <thead>
             <tr>
                 <th>MessageID</th>
+                <th>WriteName</th>
                 <th>本文DetailMessage</th>
                 <th>UserID</th>
             </tr>
@@ -38,7 +39,8 @@
             @foreach (Messages item in Msgs)
             {
                 <tr>
-                     <th>@item.MessageID</th> 
+                     <th>@item.MessageID</th>
+                     <th>@item.WriteName</th>
                      <td>@item.DetailMessage</td> 
                      <td>@item.UserID</td>
                 </tr>
@@ -115,7 +117,7 @@ else
         //  メッセージを作成する
         messagesDao.Insert(msg);
 
-        ReloadPage();
+        //ReloadPage();
     }
 
     /// <summary>

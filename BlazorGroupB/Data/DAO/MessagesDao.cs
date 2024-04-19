@@ -38,20 +38,14 @@ public class MessagesDao
         {
             Debug.WriteLine(ex.Message);
             Debug.WriteLine(ex.StackTrace);
-            throw new Exception("コネクションオープンエラー");
-
-        }
-        catch (NullReferenceException ex)
-        {
-            Debug.WriteLine(ex.Message);
-            Debug.WriteLine(ex.StackTrace);
+            throw new Exception("Messagesコネクションオープンエラー");
 
         }
         catch (Exception ex)
         {
             Debug.WriteLine(ex.Message);
             Debug.WriteLine(ex.StackTrace);
-            throw new Exception("コネクション処理エラー");
+            throw new Exception("Messagesコネクション処理エラー");
 
         }
 
@@ -65,12 +59,14 @@ public class MessagesDao
 
         //  接続確認
         if (!Connection())
-            return result;
+            throw new Exception("NpgSqlの接続に失敗しました");
 
 
         //  DTOの確認
         if (msg == null)
-            return result;
+            throw new Exception("新規メッセージ情報の取得に失敗しました");
+
+
 
         try
         {
@@ -89,9 +85,9 @@ public class MessagesDao
 
             //  パラメーターのセット
             cmd.Parameters.AddWithValue("@thread_id", msg.ThreadID);
-            cmd.Parameters.AddWithValue("@user_id", msg.UserID);
-            cmd.Parameters.AddWithValue("@write_name", msg.WriteName);
-            cmd.Parameters.AddWithValue("@detail_message", msg.DetailMessage);
+            cmd.Parameters.AddWithValue("@user_id", msg.UserID ?? "UserIDの取得に失敗");
+            cmd.Parameters.AddWithValue("@write_name", msg.WriteName ?? "名無し");
+            cmd.Parameters.AddWithValue("@detail_message", msg.DetailMessage ?? "本文の取得に失敗");
             cmd.Parameters.AddWithValue("@post_time", msg.PostTime);
 
             //  TRANSACTION
@@ -107,13 +103,13 @@ public class MessagesDao
         {
             Debug.WriteLine(ex.Message);
             Debug.WriteLine(ex.StackTrace);
-            throw new Exception("インサートエラー");
+            throw new Exception("Messagesインサートエラー");
         }
         catch (Exception ex)
         {
             Debug.WriteLine(ex.Message);
             Debug.WriteLine(ex.StackTrace);
-            throw new Exception("インサート処理エラー");
+            throw new Exception("Messagesインサート処理エラー");
         }
         finally
         {
