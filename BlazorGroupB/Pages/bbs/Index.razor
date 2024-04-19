@@ -1,7 +1,6 @@
 ﻿@page "/"
 @using BlazorGroupB.Data
 @using BlazorGroupB.Data.DAO;
-@using BlazorGroupB.Models
 @using System.Text
 @using Microsoft.EntityFrameworkCore
 @using System.Configuration
@@ -15,7 +14,8 @@
     <div class="channel-name text-center" style="font-size: 50px;">
         @ChannelName <!-- チャンネル名を表示 -->
     </div>
-</div>
+</div>@using BlazorGroupB.Models
+
 
 <div class="buttons">
     <button @onclick="DoFortuneTelling" class="buttons special" style="font-size: 16px; width: 100px; padding: 15px 30px;">占い</button>
