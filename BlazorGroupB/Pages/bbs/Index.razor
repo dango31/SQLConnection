@@ -11,114 +11,77 @@
 @inject BlazorGroupBDbContext _contextThread
 @inject NavigationManager NaviManager
 
-<button class="btn btn-primary" @onclick="DoFortuneTelling">占い</button>
-<button class="btn btn-primary" @onclick="ReloadPage">再読み込み</button>
-<button class="btn btn-primary" @onclick="NewThread">スレッドの新規投稿</button>
-
-<EditForm Model="@threadsSearch" OnSubmit="SelectSearch">
-    <div class="form-group">
-        <label asp-for="threadsSearch.searchString" class="control-label"></label>
-        <input asp-for="threadsSearch.searchString" class="form-control" @bind-value=@threadsSearch.searchString />
+<div class="banner">
+    <div class="channel-name text-center" style="font-size: 50px;">
+        @ChannelName <!-- チャンネル名を表示 -->
     </div>
-    <button class="btn btn-primary">検索ボタン</button>
-</EditForm>
+</div>
 
+<div class="buttons">
+    <button @onclick="DoFortuneTelling" class="buttons special" style="font-size: 16px; width: 100px; padding: 15px 30px;">占い</button>
+    <button @onclick="ReloadPage" style="font-size: 16px; width: 170px; padding: 15px 30px;">再読み込み</button>
+</div>
+
+<div class="search">
+    <button @onclick="NewThread" style="font-size: 16px; width: 250px; padding: 15px 30px;">新規スレッド投稿</button>
+    <!-- 検索用の入力欄 -->
+    <input type="text" @bind="searchString" placeholder="検索">
+    <!-- 検索ボタン -->
+    <button @onclick="SelectSearch" class="button">検索</button>
+</div>
+
+
+<!-- メッセージ一覧 -->
 @if (Ths != null && !searchbool)
 {
-    <table class="table">
-        <thead>
-            <tr>
-                <th>ThreadID</th>
-                <th>ThreadName</th>
-
-            </tr>
-        </thead>
-
-        <tbody>
-            @foreach (var item in Ths)
-            {
-                <tr>
-
-                    <td>@item.ThreadID</td>
-                    <td><a href="/ThreadPage/@item.ThreadID">@item.ThreadName</a> </td>
-
-                </tr>
-            }
-        </tbody>
-    </table>
+    @foreach (var th in Ths)
+    {
+        
+        <div class="message-container border rounded p-3 mt-3">
+            <a href="/ThreadPage/@th.ThreadID">
+            <div class="d-flex justify-content-between">
+                <div>@th.ThreadName</div>
+                <div>@th.ThreadID</div>
+            </div>
+            </a>
+        </div>
+    }
 }
 else if (searchbool)
 {
-    <table class="table">
-        <thead>
-            <tr>
-                <th>ThreadID</th>
-                <th>ThreadName</th>
+    @foreach (var th in afterSearch)
+    {
 
-            </tr>
-        </thead>
-
-        <tbody>
-            @foreach (var item in afterSearch)
-            {
-                <tr>
-
-                    <td>@item.ThreadID</td>
-                    <td><a href="/ThreadPage/@item.ThreadID">@item.ThreadName</a> </td>
-
-                </tr>
-            }
-        </tbody>
-    </table>
+        <div class="message-container border rounded p-3 mt-3">
+            <a href="/ThreadPage/@th.ThreadID">
+                <div class="d-flex justify-content-between">
+                    <div>@th.ThreadName</div>
+                    <div>@th.ThreadID</div>
+                </div>
+            </a>
+        </div>
+    }
 }
 else
 {
-    <div class="text-primary">No-Data...</div>
+    <div class="text-primary mt-3">No Data...</div>
 }
 
-
-@* <EditForm Model="@th" OnSubmit="OnCreateThread">
-    <div class="form-group">
-        <label asp-for="th.ThreadName" class="control-label"></label>
-        <input asp-for="th.ThreadName" class="form-control" @bind-value=@th.ThreadName />
-    </div>
-    <button class="btn btn-primary">thread作成</button>
-</EditForm> *@
-
 @code {
+    //  スレッド一覧のデータを保持するList
     private List<Threads> Ths { get; set; }
+
+    //  検索後のスレッド一覧のデータを保持するList
     private List<Threads> afterSearch = new List<Threads>();
 
-    // private Threads th = new Threads();
-
-    // private NpgsqlConnection conn = null;
-    // private ThreadsDao dao;
+    //  検索が行われたのかを判定するbool
     private bool searchbool = false;
 
-    public class ThreadsSearch
-    {
-        public string searchString { get; set; }
-    }
-    private ThreadsSearch threadsSearch = new ThreadsSearch();
+    //  検索文字の保持
+    string searchString;
 
-    // private async void OnCreateThread()
-    // {
-
-    //     //  作成時刻を追加する
-    //     DateTime dt = DateTime.Now;
-    //     th.ThreadCreateDate = dt;
-
-    //     //  ユーザーIDを追加する
-    //     th.UserID = "匿名";
-
-    //     //  スレッドを作成する
-    //     int number = dao.Insert(th);
-
-    //     // //  そのurlにジャンプする
-    //     string url = "/ThreadPage/" + number.ToString();
-    //     NaviManager.NavigateTo(url);
-
-    // }
+    // チャンネル名を保持するプロパティ
+    private string ChannelName { get; set; } = "エール第一チャンネル";
 
     /// <summary>
     /// 開かれたら最初に起動される
@@ -128,46 +91,41 @@ else
     {
         //  データベースからデータを取り出す
         Ths = await _contextThread.Threads.ToListAsync<Threads>();
-        // daoConnection();
 
     }
-    // private void daoConnection()
-    // {
 
-    //     var builder = new NpgsqlConnectionStringBuilder
-    //     {
-    //         Host = "localhost",
-    //         Database = "test",
-    //         Username = "postgres",
-    //         Password = "postgres"
-    //     };
-
-    //     conn = new NpgsqlConnection(
-    //     builder.ConnectionString);
-
-    //     // conn = new NpgsqlConnection(
-    //     // ConfigurationManager.ConnectionStrings
-    //     // ["PosgreConnection"].ConnectionString);
-
-    //     dao = new ThreadsDao(conn);
-    // }
+    /// <summary>
+    /// ページの再読み込み
+    /// </summary>
     public void ReloadPage()
     {
         StringBuilder sb = new StringBuilder();
         sb.Append("/");
         NaviManager.NavigateTo(sb.ToString(), forceLoad: true);
     }
+
+    /// <summary>
+    /// 新規スレッド作成ページに移る
+    /// </summary>
     public void NewThread()
     {
         StringBuilder sb = new StringBuilder();
         sb.Append("/CreateThreadPage");
         NaviManager.NavigateTo(sb.ToString(), forceLoad: true);
     }
+
+    /// <summary>
+    /// スレッド一覧からの検索
+    /// </summary>
     public void SelectSearch()
     {
-        afterSearch = Ths.FindAll(x => x.ThreadName.Contains(threadsSearch.searchString));
+        afterSearch = Ths.FindAll(x => x.ThreadName.Contains(searchString));
         searchbool = true;
     }
+
+    /// <summary>
+    /// 占いを行う
+    /// </summary>
     public void DoFortuneTelling()
     {
         StringBuilder sb = new StringBuilder();

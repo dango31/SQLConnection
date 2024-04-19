@@ -41,20 +41,14 @@ public class ThreadsDao
         {
             Debug.WriteLine(ex.Message);
             Debug.WriteLine(ex.StackTrace);
-            throw new Exception("コネクションオープンエラー");
-
-        }
-        catch (NullReferenceException ex)
-        {
-            Debug.WriteLine(ex.Message);
-            Debug.WriteLine(ex.StackTrace);
+            throw new Exception("Threadsコネクションオープンエラー");
 
         }
         catch (Exception ex)
         {
             Debug.WriteLine(ex.Message);
             Debug.WriteLine(ex.StackTrace);
-            throw new Exception("コネクション処理エラー");
+            throw new Exception("Threadsコネクション処理エラー");
 
         }
 
@@ -64,16 +58,21 @@ public class ThreadsDao
     public int Insert(Threads ths)
     {
         NpgsqlTransaction transaction = null;
-        int result = 0;
 
         //  接続確認
         if (!Connection())
-            return result;
+            throw new Exception("NpgSqlの接続に失敗しました");
 
 
         //  DTOの確認
         if (ths == null)
-            return result;
+            throw new Exception("新規スレッド情報の取得に失敗しました");
+
+        //  スレッド名が入っているかの確認
+        if (ths.ThreadName == null)
+        {
+            throw new Exception("新規スレッド名の取得に失敗しました");
+        }
 
         try
         {
@@ -91,7 +90,7 @@ public class ThreadsDao
             NpgsqlCommand cmd = new NpgsqlCommand(sql.ToString(), conn);
 
             //  パラメーターのセット
-            cmd.Parameters.AddWithValue("@thread_name", ths.ThreadName);
+            cmd.Parameters.AddWithValue("@thread_name", ths.ThreadName ?? "スレッド名の取得に失敗");
             cmd.Parameters.AddWithValue("@user_id", ths.UserID);
             cmd.Parameters.AddWithValue("@thread_create_date", ths.ThreadCreateDate);
 
@@ -108,13 +107,13 @@ public class ThreadsDao
         {
             Debug.WriteLine(ex.Message);
             Debug.WriteLine(ex.StackTrace);
-            throw new Exception("インサートエラー");
+            throw new Exception("Threadsインサートエラー");
         }
         catch (Exception ex)
         {
             Debug.WriteLine(ex.Message);
             Debug.WriteLine(ex.StackTrace);
-            throw new Exception("インサート処理エラー");
+            throw new Exception("Threadsインサート処理エラー");
         }
         finally
         {

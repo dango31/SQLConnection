@@ -15,7 +15,41 @@
 
 <h1>クリエイトスレッドページ</h1>
 
-<EditForm Model="@tmc" OnSubmit="OnCreateThread">
+<div class="thread-creation-page">
+    <!-- ヘッダー部分 -->
+    <div class="purple-band d-flex justify-content-between align-items-center">
+        <button class="btn btn-primary rounded-pill" @onclick="BackTopPage">トップページへ</button>
+        <h1 class="text-white mx-auto">ABCチャンネル</h1>
+    </div>
+    <!-- スレッド作成フォーム -->
+    <div class="thread-creation-form">
+        <h2>スレッド作成</h2>
+        <!-- タイトル入力欄 -->
+        <div class="input-group">
+            <label for="title">タイトル：</label>
+            <input @bind="title" id="title" type="text" maxlength="20" />
+        </div>
+        <!-- 投稿内容入力欄 -->
+        <div class="input-group">
+            <label for="content" class="textarea-label">投稿内容：</label>
+            <textarea @bind="content" id="content" rows="4"></textarea>
+        </div>
+        <!-- 名前入力欄 -->
+        <div class="input-group">
+            <label for="nickname">名前(ニックネーム)：</label>
+            <input @bind="nickname" id="nickname" type="text" />
+        </div>
+        <div class="button-group">
+            <!-- 全クリアボタン -->
+            <button @onclick="ClearContent" class="clear-button">全クリア</button>
+            <!-- スレッド作成ボタン -->
+            <button @onclick="OnCreateThread" class="create-thread-button">スレッド作成</button>
+        </div>
+    </div>
+</div>
+
+@* 入力欄 *@
+@* <EditForm Model="@tmc" OnSubmit="OnCreateThread">
     <div class="form-group">
         <label asp-for="tmc.threads.ThreadName" class="control-label"></label>
         <input asp-for="tmc.threads.ThreadName" class="form-control" @bind-value=@tmc.threads.ThreadName />
@@ -26,21 +60,29 @@
     </div>
     
     <button class="btn btn-primary">thread作成</button>
-</EditForm>
+</EditForm> *@
 
-<button class="btn btn-primary" @onclick="AllDelete">書き込み内容の削除</button>
+
 
 
 @code {
 
+    private string title = "";
+    private string content = "";
+    private string nickname = "";
+
+    //  Usersクラスのインスタンス化
     Users user = new Users();
+    //  ユーザーIDの保持
     string userdataID = "";
 
+    //  各種Daoクラス。インスタンスは後で行う
     private NpgsqlConnection conn = null;
     private ThreadsDao threadsDao;
     private MessagesDao messagesDao;
     private UsersDao usersDao;
 
+    //  MessagesクラスとThreadsクラスの値を保持するクラスの作成とインスタンス化
     public class ThreadMessageClass
     {
         public Messages? messages { get; set; } = new Messages();
@@ -48,11 +90,22 @@
     }
     ThreadMessageClass tmc = new ThreadMessageClass();
 
-
+    /// <summary>
+    /// スレッドとメッセージの書き込み
+    /// </summary>
     private void OnCreateThread()
     {
+        if (title == null || content == null)
+            return;
+
+        //  クラスに値を入れ込む
+        tmc.threads.ThreadName = title;
+        tmc.messages.WriteName = nickname;
+        tmc.messages.DetailMessage = content;
+
+        //  スレッドとメッセージを新規で作成する
         int number = NewThread();
-        NewMessage(number);
+        PostMessage(number);
 
         // //  そのurlにジャンプする
         string url = "/ThreadPage/" + number.ToString();
@@ -60,6 +113,10 @@
 
     }
 
+    /// <summary>
+    /// スレッドを作成する
+    /// </summary>
+    /// <returns>スレッドID</returns>
     private int NewThread()
     {
         //  作成時刻を追加する
@@ -74,7 +131,12 @@
 
         return number;
     }
-    private void NewMessage(int number)
+
+    /// <summary>
+    /// メッセージを作成する
+    /// </summary>
+    /// <param name="number"></param>
+    private void PostMessage(int number)
     {
         //  ThreadIDを追加する
         tmc.messages.ThreadID = number;
@@ -90,12 +152,21 @@
         messagesDao.Insert(tmc.messages);
     }
 
+    /// <summary>
+    /// 最初に起動される
+    /// </summary>
+    /// <returns></returns>
     protected override async Task OnInitializedAsync()
     {
+        //  各種Daoと接続する
         daoConnection();
-
     }
 
+    /// <summary>
+    /// レンダーが終わった後に起動される（OnInitializedAsyncの後）UserIDを作成する
+    /// </summary>
+    /// <param name="firstRender"></param>
+    /// <returns></returns>
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         //  UAをuserに追加する
@@ -107,6 +178,9 @@
         userdataID = usersDao.Insert(user);
     }
 
+    /// <summary>
+    /// 各種Daoと接続する
+    /// </summary>
     private void daoConnection()
     {
 
@@ -127,16 +201,24 @@
 
     }
 
+    /// <summary>
+    /// トップページに戻る
+    /// </summary>
     private void BackTopPage()
     {
         StringBuilder sb = new StringBuilder();
         sb.Append("/");
         NaviManager.NavigateTo(sb.ToString(), forceLoad: true);
     }
-    private void AllDelete()
+
+    /// <summary>
+    /// 書き込み内容を全てクリアする
+    /// </summary>
+    private void ClearContent()
     {
-        tmc.threads.ThreadName = "";
-        tmc.messages.WriteName = "";
-        tmc.messages.DetailMessage = "";
+        // タイトル、投稿内容、名前の各入力欄を空にする
+        title = "";
+        content = "";
+        nickname = "";
     }
 }
