@@ -1,4 +1,4 @@
-﻿@page "/CreateThreadPage"
+﻿@page "/thread/create"
 @using BlazorGroupB.Data
 @using BlazorGroupB.Data.DAO;
 @using BlazorGroupB.Models
@@ -8,31 +8,48 @@
 @using Npgsql
 @using System.Data
 @using System.Diagnostics
-@inject NavigationManager NaviManager
+@inject NavigationManager NavigationManager
 @inject IJSRuntime JSRuntime
 
-<button class="btn btn-primary" @onclick="BackTopPage">トップページ</button>
-
-<h1>クリエイトスレッドページ</h1>
-
-@* 入力欄 *@
-<EditForm Model="@tmc" OnSubmit="OnCreateThread">
-    <div class="form-group">
-        <label asp-for="tmc.threads.ThreadName" class="control-label"></label>
-        <input asp-for="tmc.threads.ThreadName" class="form-control" @bind-value=@tmc.threads.ThreadName />
-        <label asp-for="tmc.messages.WriteName" class="control-label"></label>
-        <input asp-for="tmc.messages.WriteName" class="form-control" @bind-value=@tmc.messages.WriteName />
-        <label asp-for="tmc.messages.DetailMessage" class="control-label"></label>
-        <input asp-for="tmc.messages.DetailMessage" class="form-control" @bind-value=@tmc.messages.DetailMessage />
+<div class="thread-creation-page">
+    <!-- ヘッダー部分 -->
+    <div class="purple-band d-flex justify-content-between align-items-center">
+        <button class="btn btn-primary rounded-pill" @onclick="GoToHomePage">トップページへ</button>
+        <h1 class="text-white mx-auto">ABCチャンネル</h1>
     </div>
-    
-    <button class="btn btn-primary">thread作成</button>
-</EditForm>
-
-<button class="btn btn-primary" @onclick="AllDelete">書き込み内容の削除</button>
-
+    <!-- スレッド作成フォーム -->
+    <div class="thread-creation-form">
+        <h2>スレッド作成</h2>
+        <!-- タイトル入力欄 -->
+        <div class="input-group">
+            <label for="title">タイトル：</label>
+            <input @bind="title" id="title" type="text" maxlength="20" />
+        </div>
+        <!-- 投稿内容入力欄 -->
+        <div class="input-group">
+            <label for="content" class="textarea-label">投稿内容：</label>
+            <textarea @bind="content" id="content" rows="4"></textarea>
+        </div>
+        <!-- 名前入力欄 -->
+        <div class="input-group">
+            <label for="nickname">名前(ニックネーム)：</label>
+            <input @bind="nickname" id="nickname" type="text" />
+        </div>
+        <div class="button-group">
+            <!-- 全クリアボタン -->
+            <button @onclick="ClearContent" class="clear-button">全クリア</button>
+            <!-- スレッド作成ボタン -->
+            <button @onclick="CreateThread" class="create-thread-button">スレッド作成</button>
+        </div>
+    </div>
+</div>
 
 @code {
+    // プロパティ
+    private string title = "";
+    private string content = "";
+    private string nickname = "";
+
     //  Usersクラスのインスタンス化
     Users user = new Users();
     //  ユーザーIDの保持
@@ -44,31 +61,37 @@
     private MessagesDao messagesDao;
     private UsersDao usersDao;
 
-    //  MessagesクラスとThreadsクラスの値を保持するクラスの作成とインスタンス化
-    public class ThreadMessageClass
+    /// <summary>
+    /// トップページに戻る
+    /// </summary>
+    private void GoToHomePage()
     {
-        public Messages? messages { get; set; } = new Messages();
-        public Threads? threads { get; set; } = new Threads();
+        NavigationManager.NavigateTo("/");
     }
-    ThreadMessageClass tmc = new ThreadMessageClass();
 
     /// <summary>
-    /// スレッドとメッセージの書き込み
+    /// 入力内容をクリアするメソッド
     /// </summary>
-    private void OnCreateThread()
+    private void ClearContent()
     {
-        if (tmc.threads.ThreadName == null)
-            return;
+        // タイトル、投稿内容、名前の各入力欄を空にする
+        title = "";
+        content = "";
+        nickname = "";
+    }
 
-
-        //  スレッドとメッセージを新規で作成する
+    /// <summary>
+    /// スレッドを作成するメソッド
+    /// </summary>
+    private void CreateThread()
+    {
+        // スレッドとメッセージを新規で作成する
         int number = NewThread();
         PostMessage(number);
 
         // //  そのurlにジャンプする
         string url = "/ThreadPage/" + number.ToString();
-        NaviManager.NavigateTo(url);
-
+        NavigationManager.NavigateTo(url);
     }
 
     /// <summary>
@@ -79,13 +102,10 @@
     {
         //  作成時刻を追加する
         DateTime dt = DateTime.Now;
-        tmc.threads.ThreadCreateDate = dt;
-
-        //  ユーザーIDを追加する
-        tmc.threads.UserID = userdataID;
+        var thread = new Threads { ThreadName = title, ThreadCreateDate = dt, UserID = userdataID };
 
         //  スレッドを作成する
-        int number = threadsDao.Insert(tmc.threads);
+        int number = threadsDao.Insert(thread);
 
         return number;
     }
@@ -93,21 +113,13 @@
     /// <summary>
     /// メッセージを作成する
     /// </summary>
-    /// <param name="number"></param>
+    /// <param name="number">スレッドID</param>
     private void PostMessage(int number)
     {
-        //  ThreadIDを追加する
-        tmc.messages.ThreadID = number;
-
-        //  投稿時間を追加する
-        DateTime dt = DateTime.Now;
-        tmc.messages.PostTime = dt;
-
-        //  メッセージにUserIDを打ち込む
-        tmc.messages.UserID = userdataID;
-
         //  メッセージを作成する
-        messagesDao.Insert(tmc.messages);
+        DateTime dt = DateTime.Now;
+        var message = new Messages { ThreadID = number, WriteName = nickname, DetailMessage = content, PostTime = dt, UserID = userdataID };
+        messagesDao.Insert(message);
     }
 
     /// <summary>
@@ -157,25 +169,5 @@
         messagesDao = new MessagesDao(conn);
         usersDao = new UsersDao(conn);
 
-    }
-
-    /// <summary>
-    /// トップページに戻る
-    /// </summary>
-    private void BackTopPage()
-    {
-        StringBuilder sb = new StringBuilder();
-        sb.Append("/");
-        NaviManager.NavigateTo(sb.ToString(), forceLoad: true);
-    }
-
-    /// <summary>
-    /// 書き込み内容を全てクリアする
-    /// </summary>
-    private void AllDelete()
-    {
-        tmc.threads.ThreadName = "";
-        tmc.messages.WriteName = "";
-        tmc.messages.DetailMessage = "";
     }
 }

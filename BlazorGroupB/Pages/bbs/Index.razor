@@ -9,137 +9,61 @@
 @using System.Data
 @using System.Diagnostics
 @inject BlazorGroupBDbContext _contextThread
-@inject NavigationManager NaviManager
+@inject NavigationManager NavigationManager
 
-@* 各種ボタン *@
-<button class="btn btn-primary" @onclick="DoFortuneTelling">占い</button>
-<button class="btn btn-primary" @onclick="ReloadPage">再読み込み</button>
-<button class="btn btn-primary" @onclick="NewThread">スレッドの新規投稿</button>
-
-@* 検索機能 *@
-<div class="form-group">
-    <label>
-        User:
-        <input @bind="searchString" />
-    </label>
+<div class="banner">
+    <div class="channel-name text-center" style="font-size: 50px;">
+        @ChannelName <!-- チャンネル名を表示 -->
+    </div>
 </div>
-<button @onclick="SelectSearch" >検索ボタン</button>
 
-@* スレッド一覧の表示 *@
-@if (Ths != null && !searchbool)
-{
-    <table class="table">
-        <thead>
-            <tr>
-                <th>ThreadID</th>
-                <th>ThreadName</th>
-            </tr>
-        </thead>
+<div class="buttons">
+    <button @onclick="DoFortuneTelling" class="buttons special" style="font-size: 16px; width: 100px; padding: 15px 30px;">占い</button>
+    <button @onclick="ReloadPage" style="font-size: 16px; width: 170px; padding: 15px 30px;">再読み込み</button>
+</div>
 
-        <tbody>
-            @foreach (var item in Ths)
-            {
-                <tr>
+<div class="search">
+    <button @onclick="NewThread" style="font-size: 16px; width: 250px; padding: 15px 30px;">新規スレッド投稿</button>
+    <!-- 検索用の入力欄 -->
+    <input type="text" @bind="searchTerm" placeholder="検索">
+    <!-- 検索ボタン -->
+    <button @onclick="SelectSearch" class="button">検索</button>
+</div>
 
-                    <td>@item.ThreadID</td>
-                    <td><a href="/ThreadPage/@item.ThreadID">@item.ThreadName</a> </td>
-                </tr>
-            }
-        </tbody>
-    </table>
-}
-@* 検索後の表示 *@
-else if (searchbool)
-{
-    <table class="table">
-        <thead>
-            <tr>
-                <th>ThreadID</th>
-                <th>ThreadName</th>
-
-            </tr>
-        </thead>
-
-        <tbody>
-            @foreach (var item in afterSearch)
-            {
-                <tr>
-
-                    <td>@item.ThreadID</td>
-                    <td><a href="/ThreadPage/@item.ThreadID">@item.ThreadName</a> </td>
-
-                </tr>
-            }
-        </tbody>
-    </table>
-}
-else
-{
-    <div class="text-primary">No-Data...</div>
-}
-
-
+<div class="thread">
+    <!-- スレッドの表示を行うコンポーネントを追加 -->
+    <ThreadDisplay />
+</div>
 
 @code {
-    //  スレッド一覧のデータを保持するList
-    private List<Threads> Ths { get; set; }
+    // チャンネル名を保持するプロパティ
+    private string ChannelName { get; set; } = "エール第一チャンネル";
 
-    //  検索後のスレッド一覧のデータを保持するList
-    private List<Threads> afterSearch = new List<Threads>();
+    private string searchTerm;
 
-    //  検索が行われたのかを判定するbool
-    private bool searchbool = false;
-
-    //  検索文字の保持
-    string searchString;
-
-    /// <summary>
-    /// 開かれたら最初に起動される
-    /// </summary>
-    /// <returns></returns>
-    protected override async Task OnInitializedAsync()
+    // 新しいスレッドを投稿するメソッド
+    private void NewThread()
     {
-        //  データベースからデータを取り出す
-        Ths = await _contextThread.Threads.ToListAsync<Threads>();
-
+        // 新しいスレッド作成ページに遷移
+        NavigationManager.NavigateTo("/Thread/Create");
     }
 
-    /// <summary>
-    /// ページの再読み込み
-    /// </summary>
-    public void ReloadPage()
+    // 検索を実行するメソッド
+    private void SelectSearch()
     {
-        StringBuilder sb = new StringBuilder();
-        sb.Append("/");
-        NaviManager.NavigateTo(sb.ToString(), forceLoad: true);
+        // ここに検索を実行する処理を追加
     }
 
-    /// <summary>
-    /// 新規スレッド作成ページに移る
-    /// </summary>
-    public void NewThread()
+    // 占いボタンが押されたときの処理
+    private void DoFortuneTelling()
     {
-        StringBuilder sb = new StringBuilder();
-        sb.Append("/CreateThreadPage");
-        NaviManager.NavigateTo(sb.ToString(), forceLoad: true);
+        // 占いページに遷移
+        NavigationManager.NavigateTo("/UranaiPage");
     }
 
-    /// <summary>
-    /// スレッド一覧からの検索
-    /// </summary>
-    public void SelectSearch()
+    // ページを再読み込みするメソッド
+    private void ReloadPage()
     {
-        afterSearch = Ths.FindAll(x => x.ThreadName.Contains(searchString));
-        searchbool = true;
-    }
-
-    /// <summary>
-    /// 占いを行う
-    /// </summary>
-    public void DoFortuneTelling()
-    {
-        StringBuilder sb = new StringBuilder();
-        sb.Append("/UranaiPage");
-        NaviManager.NavigateTo(sb.ToString(), forceLoad: true);
+        NavigationManager.NavigateTo(NavigationManager.Uri, forceLoad: true);
     }
 }
