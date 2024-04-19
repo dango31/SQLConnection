@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.ResponseCompression;
+using BlazorGroupB.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,7 +17,13 @@ builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 builder.Services.AddSingleton<WeatherForecastService>();
 
-
+//  シグナルRのための追加
+builder.Services.AddResponseCompression(opts =>
+{
+    opts.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(
+          new[] { "application/octet-stream" });
+});
+//ここまで
 
 var app = builder.Build();
 
@@ -35,5 +43,10 @@ app.UseRouting();
 
 app.MapBlazorHub();
 app.MapFallbackToPage("/_Host");
+
+//  シグナルRのための追加
+app.UseResponseCompression();
+app.MapHub<ChatHub>("/chathub");
+//  ここまで
 
 app.Run();

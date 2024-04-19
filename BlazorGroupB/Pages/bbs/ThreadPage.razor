@@ -8,6 +8,9 @@
 @using Npgsql
 @using System.Data
 @using System.Diagnostics
+@using Microsoft.AspNetCore.Mvc.Rendering
+@using Microsoft.AspNetCore.SignalR.Client
+@implements IAsyncDisposable
 @inject BlazorGroupBDbContext _context
 @inject NavigationManager NaviManager
 @inject IJSRuntime JSRuntime
@@ -15,7 +18,11 @@
 <button class="btn btn-primary" @onclick="BackTopPage">トップページ</button>
 <button class="btn btn-primary" @onclick="ReloadPage">再読み込み</button>
 
+@* スレッドタイトルの表示 *@
+<h1>@th.ThreadName</h1>
 
+
+@* メッセージ一覧の表示 *@
 @if (Msgs != null && int.TryParse(CodeID, out int number))
 {
     <table class="table">
@@ -41,10 +48,11 @@
 }
 else
 {
-
+    <div class="text-primary">No-Data...</div>
 }
 
-<EditForm Model="@msg" OnSubmit="PostMessage">
+@* メッセージの入力欄 *@
+<EditForm Model="@msg" OnSubmit="Send">
     <div class="form-group">
         <label asp-for="msg.DetailMessage" class="control-label"></label>
         <input asp-for="msg.DetailMessage" class="form-control" @bind-value=@msg.DetailMessage />
@@ -56,18 +64,36 @@ else
 
 
 @code {
+    //  ページの番号を保持する
     [Parameter]
     public string CodeID { get; set; }
 
-    private List<Messages> Msgs { get; set; }
-    Messages msg = new Messages();
-    Users user = new Users();
+    //  メッセージ一覧を保持する
+    private List<Messages> Msgs { get; set; } = new List<Messages>();
 
+    //  新規メッセージを保持する
+    Messages msg = new Messages();
+
+    //  このページのスレッド情報を保持する
+    Threads th = new Threads();
+
+    //  ユーザー情報を保持する
+    Users user = new Users();
+    //  UserIDを保持する
+    string userdataID = "";
+
+    //  各種Dao。インスタンスは後で行う
     private NpgsqlConnection conn = null;
     private MessagesDao messagesDao;
     private UsersDao usersDao;
 
-    private async void PostMessage()
+    //  追加
+    private HubConnection? hubConnection;
+
+    /// <summary>
+    /// メッセージの作成
+    /// </summary>
+    private void PostMessage()
     {
         //  ThreadIDを追加する
         if (int.TryParse(CodeID, out int number))
@@ -83,14 +109,6 @@ else
         DateTime dt = DateTime.Now;
         msg.PostTime = dt;
 
-        //  UAをuserに追加する
-        var remoteUserAgent = await JSRuntime.InvokeAsync<string>("getUserAgent");
-        user.UserAgent = remoteUserAgent;
-        user.UserCreateDate = dt;
-
-        //  Userを作成する
-        string userdataID = usersDao.Insert(user);
-
         //  メッセージにUserIDを打ち込む
         msg.UserID = userdataID;
 
@@ -100,29 +118,9 @@ else
         ReloadPage();
     }
 
-    protected override async Task OnInitializedAsync()
-    {
-        //  データベースから値を取り出す
-        if (int.TryParse(CodeID, out int number))
-        {
-            try
-            {
-                Msgs = await _context.Messages.Where(m => m.ThreadID == number).ToListAsync<Messages>();
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine(ex.Message);
-            }
-
-        }
-        else
-        {
-            Msgs = await _context.Messages.ToListAsync<Messages>();
-        }
-        daoConnection();
-
-
-    }
+    /// <summary>
+    /// 各種Daoのインスタンス
+    /// </summary>
     private void daoConnection()
     {
         var builder = new NpgsqlConnectionStringBuilder
@@ -136,17 +134,120 @@ else
         messagesDao = new MessagesDao(conn);
         usersDao = new UsersDao(conn);
     }
+    /// <summary>
+    /// トップページに戻る
+    /// </summary>
     public void BackTopPage()
     {
         StringBuilder sb = new StringBuilder();
         sb.Append("/");
         NaviManager.NavigateTo(sb.ToString(), forceLoad: true);
     }
+    /// <summary>
+    /// ページの再読み込み
+    /// </summary>
     private void ReloadPage()
     {
         StringBuilder sb = new StringBuilder();
         sb.Append("/ThreadPage/")
             .Append(CodeID);
         NaviManager.NavigateTo(sb.ToString(), forceLoad: true);
+    }
+
+    /// <summary>
+    /// OnInitializedAsyncの後に起動される。UserIDを生成する。
+    /// </summary>
+    /// <param name="firstRender"></param>
+    /// <returns></returns>
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+
+        daoConnection();
+        //  UAをuserに追加する
+        var remoteUserAgent = await JSRuntime.InvokeAsync<string>("getUserAgent");
+        user.UserAgent = remoteUserAgent;
+        user.UserCreateDate = DateTime.Now;
+
+        //  Userを作成する
+        userdataID = usersDao.Insert(user);
+
+    }
+
+    //追加項目
+
+    /// <summary>
+    /// 最初に起動される
+    /// </summary>
+    /// <returns></returns>
+    protected override async Task OnInitializedAsync()
+    {
+        //  ハブコネクションの接続の構築
+        hubConnection = new HubConnectionBuilder()
+            .WithUrl(NaviManager.ToAbsoluteUri("/chathub"))
+            .Build();
+
+        //  受信したデータをメッセージリストに追加している
+        //  最後にInvokeAsync(StateHasChanged)を呼び出すことで
+        // blazorに通知され、UIが更新される
+        hubConnection.On<Messages>("ReceiveMessage", (msg) =>
+        {
+            Msgs.Add(msg);
+            InvokeAsync(StateHasChanged);
+        });
+        //  データベースから値を取り出す
+        if (int.TryParse(CodeID, out int number))
+        {
+            try
+            {
+                //  メッセージ一覧を取り出す
+                Msgs = await _context.Messages.Where(m => m.ThreadID == number).ToListAsync<Messages>();
+
+                //  スレッドを取り出して一つに入れる
+                List<Threads> ths = new List<Threads>();
+                ths = await _context.Threads.Where(m => m.ThreadID == number).ToListAsync<Threads>();
+                th = ths[0];
+
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex.Message);
+            }
+
+        }
+        else
+        {
+            Msgs = await _context.Messages.ToListAsync<Messages>();
+        }
+        await hubConnection.StartAsync();
+    }
+
+    /// <summary>
+    /// メッセージの送信を行う
+    /// </summary>
+    /// <returns></returns>
+    private async Task Send()
+    {
+        PostMessage();
+        //  Hubに送信します
+        if (hubConnection is not null)
+        {
+            await hubConnection.SendAsync("SendMessage", msg);
+        }
+    }
+
+    //  Sendボタンが有効か無効かの判定
+    public bool IsConnected =>
+    hubConnection?.State == HubConnectionState.Connected;
+
+    /// <summary>
+    /// 不要のリソースを解放し、メモリリークを防ぐために重要らしいです
+    /// </summary>
+    /// <returns></returns>
+    public async ValueTask DisposeAsync()
+    {
+        if (hubConnection is not null)
+        {
+            await hubConnection.DisposeAsync();
+        }
     }
 }

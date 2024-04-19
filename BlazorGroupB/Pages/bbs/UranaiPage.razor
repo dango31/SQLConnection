@@ -16,24 +16,41 @@
 <h3>今日の運勢は・・・@unOne.Fortune！</h3>
 
 @code {
-    List<Uranais> uranais { get; set; }
-    Random rn = new Random();
-    int fortuneNumber = 0;
+
+    //  占いの一つの結果を保持
     Uranais unOne = new Uranais();
 
+    //  ランダムクラスのインスタンス
+    Random rn = new Random();
+
+    //  ランダムによって生成された値の保持
+    int fortuneNumber = 0;
+
+    /// <summary>
+    /// 最初に起動される。占いのデータを取り出して結果を保持する
+    /// </summary>
+    /// <returns></returns>
     protected override async Task OnInitializedAsync()
     {
         RandomUranai();
+
+        List<Uranais> uranais = new List<Uranais>();
         //  データベースからデータを取り出す
         uranais = await _contextUranais.Uranais.Where(m => m.UranaiID == fortuneNumber).ToListAsync<Uranais>();
         unOne = uranais[0];
     }
 
+    /// <summary>
+    /// ランダムから値を取り出す
+    /// </summary>
     private void RandomUranai()
     {
         fortuneNumber = rn.Next(1, 7);
     }
 
+    /// <summary>
+    /// トップページに戻る
+    /// </summary>
     public void BackTopPage()
     {
         StringBuilder sb = new StringBuilder();
