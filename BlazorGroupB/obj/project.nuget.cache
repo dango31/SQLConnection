@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "TwFlPgNquhV7Nte26GR+WsTReMzZmDyOivxV1i5KahUoQI/GF5cYM14Kf+COY+yI7jHqzpSAsl6QhKBgke/2vg==",
+  "dgSpecHash": "EfI/f8lrBOztrsZgLX6zsik+sqHvSzppPk/kw9/vAAXYWLMe3FzjKbhbgn1VXVkEc+JQYQ10nD1BZWIQab9esQ==",
   "success": true,
-  "projectFilePath": "C:\\Users\\user\\source\\GitVer1.5\\BlazorGroupB\\BlazorGroupB.csproj",
+  "projectFilePath": "C:\\Users\\user\\source\\repos\\main\\BlazorGroupB\\BlazorGroupB.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\user\\.nuget\\packages\\azure.core\\1.35.0\\azure.core.1.35.0.nupkg.sha512",
     "C:\\Users\\user\\.nuget\\packages\\azure.identity\\1.10.3\\azure.identity.1.10.3.nupkg.sha512",
