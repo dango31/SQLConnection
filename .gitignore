@@ -1,5 +1,3 @@
 .vs/
 bin/
 .vs/BlazorGroupB/v17/
-git rm -r --cached .vs
-git commit -m "Remove .vs directory from repository"
