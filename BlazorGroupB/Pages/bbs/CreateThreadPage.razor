@@ -1,6 +1,7 @@
 ﻿@page "/CreateThreadPage"
 @using BlazorGroupB.Data
 @using BlazorGroupB.Data.DAO;
+@using BlazorGroupB.Data.Utility;
 @using BlazorGroupB.Models
 @using System.Text
 @using Microsoft.EntityFrameworkCore
@@ -59,11 +60,8 @@
     //  ユーザーIDの保持
     string userdataID = "";
 
-    //  各種Daoクラス。インスタンスは後で行う
-    private NpgsqlConnection conn = null;
-    private ThreadsDao threadsDao;
-    private MessagesDao messagesDao;
-    private UsersDao usersDao;
+    //  Daoとの接続
+    private ConnectDao connectDao;
 
     private Threads th = new Threads();
     private Messages msg = new Messages();
@@ -94,7 +92,7 @@
 
         //  クラスに値を入れ込む
         th.ThreadName = title;
-        msg.WriteName = nickname;
+        msg.WriteName = nickname ?? "名無し";
         msg.DetailMessage = content;
 
         //  スレッドとメッセージを新規で作成する
@@ -123,7 +121,7 @@
             th.UserID = userdataID;
 
             //  スレッドを作成する
-            int number = threadsDao.Insert(th);
+            int number = connectDao.threadsDao.Insert(th);
 
             return number;
         }
@@ -146,15 +144,19 @@
             //  ThreadIDを追加する
             msg.ThreadID = number;
 
-            //  投稿時間を追加する
-            DateTime dt = DateTime.Now;
-            msg.PostTime = dt;
-
             //  メッセージにUserIDを打ち込む
             msg.UserID = userdataID;
 
+            //  メッセージに時間を打ち込む
+            DateTime dt = DateTime.UtcNow;
+            msg.PostTime = dt;
+
             //  メッセージを作成する
-            messagesDao.Insert(msg);
+            connectDao.messagesDao.Insert(msg);
+
+            //  投稿時間をスレッドにUPDATEする
+            connectDao.threadsDao.Update(dt, number);
+
         }
         catch
         {
@@ -170,8 +172,7 @@
     /// <returns></returns>
     protected override async Task OnInitializedAsync()
     {
-        //各種Daoと接続する
-        daoConnection();
+        connectDao = new ConnectDao();
     }
 
     /// <summary>
@@ -192,7 +193,7 @@
                 user.UserCreateDate = DateTime.Now;
 
                 //Userを作成する
-                userdataID = usersDao.Insert(user);
+                userdataID = connectDao.usersDao.Insert(user);
             }
             catch (Exception ex)
             {
@@ -200,36 +201,6 @@
 
             }
         }
-
-    }
-
-    /// <summary>
-    /// 各種Daoと接続する
-    /// </summary>
-    private void daoConnection()
-    {
-        try
-        {
-            var builder = new NpgsqlConnectionStringBuilder
-                {
-                    Host = "localhost",
-                    //Database = "test",
-                    Database = "GroupB_DataBase",
-                    Username = "postgres",
-                    Password = "postgres"
-                };
-
-            conn = new NpgsqlConnection(builder.ConnectionString);
-
-            threadsDao = new ThreadsDao(conn);
-            messagesDao = new MessagesDao(conn);
-            usersDao = new UsersDao(conn);
-        }
-        catch(Exception ex)
-        {
-            NaviManager.NavigateTo("/Error", forceLoad: true);
-        }
-
 
     }
 

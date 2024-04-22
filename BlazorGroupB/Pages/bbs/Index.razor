@@ -31,20 +31,17 @@
     <button @onclick="SelectSearch" class="button">検索</button>
 </div>
 
-
+<div style="text-align: right">更新順</div>
 <!-- メッセージ一覧 -->
 @if (Ths != null && !searchbool)
 {
     @foreach (var th in Ths)
     {
-        
         <div class="message-container border rounded p-3 mt-3">
-            <a href="/ThreadPage/@th.ThreadID">
             <div class="d-flex justify-content-between">
-                <div>@th.ThreadName</div>
-                <div>@th.ThreadID</div>
+                <div>@th.ThreadID <a href="/ThreadPage/@th.ThreadID">@th.ThreadName</a></div>
+                <div>@th.LastPostTime</div>
             </div>
-            </a>
         </div>
     }
 }
@@ -54,12 +51,11 @@ else if (searchbool)
     {
 
         <div class="message-container border rounded p-3 mt-3">
-            <a href="/ThreadPage/@th.ThreadID">
-                <div class="d-flex justify-content-between">
-                    <div>@th.ThreadName</div>
-                    <div>@th.ThreadID</div>
-                </div>
-            </a>
+            <div class="d-flex justify-content-between">
+                <div><a href="/ThreadPage/@th.ThreadID">@th.ThreadName</a></div>
+                <div>@th.LastPostTime </div>
+                <div>@th.ThreadID</div>
+            </div>
         </div>
     }
 }
@@ -81,7 +77,7 @@ else
     private bool searchbool = false;
 
     //  検索文字の保持
-    string searchString;
+    string searchString = null;
 
     // チャンネル名を保持するプロパティ
     private string ChannelName { get; set; } = "エール第一チャンネル";
@@ -96,6 +92,7 @@ else
         {
             //  データベースからデータを取り出す
             Ths = await _contextThread.Threads.ToListAsync<Threads>();
+            Ths.Reverse();
         }
         catch (Exception ex)
         {

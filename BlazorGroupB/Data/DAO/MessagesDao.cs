@@ -64,8 +64,6 @@ public class MessagesDao
         if (msg == null)
             throw new Exception("新規メッセージ情報の取得に失敗しました");
 
-
-
         try
         {
             //  INSERT文

@@ -2,9 +2,11 @@
 @using BlazorGroupB.Data
 @using BlazorGroupB.Data.DAO;
 @using BlazorGroupB.Models
+@using BlazorGroupB.Data.Utility;
 @using System.Text
 @using Microsoft.EntityFrameworkCore
 @using System.Configuration
+@using Microsoft.Extensions.Hosting;
 @using Npgsql
 @using System.Data
 @using System.Diagnostics
@@ -92,13 +94,64 @@
     //  UserIDを保持する
     string userdataID = "";
 
-    //  各種Dao。インスタンスは後で行う
-    private NpgsqlConnection conn = null;
-    private MessagesDao messagesDao;
-    private UsersDao usersDao;
+    //  Dao接続
+    private ConnectDao connectDao = new ConnectDao();
 
-    //  追加
+    //  占いデータの保存
+    List<Uranais> uranais = new List<Uranais>();
+    Random rm = new Random();
+
+    //  Hubの追加
     private HubConnection? hubConnection;
+
+
+
+    /// <summary>
+    /// メッセージの送信を行う
+    /// </summary>
+    /// <returns></returns>
+    private async Task Send()
+    {
+        try
+        {
+            if (msg.DetailMessage.Length > 300)
+            {
+                Alert("投稿内容は300文字以下にして入力してください");
+                return;
+            }
+            if (msg.WriteName?.Length > 30)
+            {
+                Alert("ニックネームは30文字以下にして入力してください");
+                return;
+            }
+
+            //  占いを行う
+            if (msg.DetailMessage.Contains("!uranai"))
+            {
+                List<Uranais> ura = new List<Uranais>();
+                ura = uranais.Where(m => m.UranaiID == rm.Next(1, 7)).ToList();
+                msg.DetailMessage += "占いの結果：" + ura[0].Fortune;
+            }
+
+            //  メッセージの投稿を行う
+            PostMessage();
+
+            //  Hubに送信します
+            if (hubConnection is not null)
+            {
+                await hubConnection.SendAsync("SendMessage", msg);
+            }
+
+            //  msgデータの整理(削除)
+            msg.WriteName = null;
+            msg.DetailMessage = null;
+
+        }
+        catch
+        {
+            NaviManager.NavigateTo("/Error", forceLoad: true);
+        }
+    }
 
     /// <summary>
     /// メッセージの作成
@@ -117,49 +170,30 @@
                 msg.ThreadID = 0;
             }
 
-            //  投稿時間を追加する
-            DateTime dt = DateTime.Now;
+            //  メッセージがnullの場合に名前を打ち込む
+            if (msg.WriteName == null)
+                msg.WriteName = "名無し";
+
+            //  メッセージに時間を打ち込む
+            DateTime dt = DateTime.UtcNow;
             msg.PostTime = dt;
 
             //  メッセージにUserIDを打ち込む
             msg.UserID = userdataID;
 
             //  メッセージを作成する
-            messagesDao.Insert(msg);
+            connectDao.messagesDao.Insert(msg);
+
+            //  投稿時間をスレッドにUPDATEする
+            connectDao.threadsDao.Update(dt, number);
         }
         catch
         {
             NaviManager.NavigateTo("/Error", forceLoad: true);
 
         }
-
-
     }
 
-    /// <summary>
-    /// 各種Daoのインスタンス
-    /// </summary>
-    private void daoConnection()
-    {
-        try
-        {
-            var builder = new NpgsqlConnectionStringBuilder
-                {
-                    Host = "localhost",
-                    Database = "GroupB_DataBase",
-                    Username = "postgres",
-                    Password = "postgres"
-                };
-            conn = new NpgsqlConnection(builder.ConnectionString);
-            messagesDao = new MessagesDao(conn);
-            usersDao = new UsersDao(conn);
-        }
-        catch
-        {
-            NaviManager.NavigateTo("/Error", forceLoad: true);
-        }
-
-    }
     /// <summary>
     /// トップページに戻る
     /// </summary>
@@ -189,7 +223,6 @@
     {
         try
         {
-
             if (firstRender)
             {
                 //  UAをuserに追加する
@@ -198,7 +231,7 @@
                 user.UserCreateDate = DateTime.Now;
 
                 //  Userを作成する
-                userdataID = usersDao.Insert(user);
+                userdataID = connectDao.usersDao.Insert(user);
             }
         }
         catch
@@ -214,8 +247,6 @@
     /// <returns></returns>
     protected override async Task OnInitializedAsync()
     {
-
-        daoConnection();
 
         //  ハブコネクションの接続の構築
         hubConnection = new HubConnectionBuilder()
@@ -243,6 +274,9 @@
                 ths = await _context.Threads.Where(m => m.ThreadID == number).ToListAsync<Threads>();
                 th = ths[0];
 
+                //  占い一覧を取り出す
+                uranais = await _context.Uranais.ToListAsync<Uranais>();
+
             }
             catch (Exception ex)
             {
@@ -259,7 +293,6 @@
             catch
             {
                 NaviManager.NavigateTo("/Error", forceLoad: true);
-
             }
 
         }
@@ -267,43 +300,6 @@
         await hubConnection.StartAsync();
     }
 
-    /// <summary>
-    /// メッセージの送信を行う
-    /// </summary>
-    /// <returns></returns>
-    private async Task Send()
-    {
-        try
-        {
-            if (msg.DetailMessage.Length > 300)
-            {
-                Alert("投稿内容は300文字以下にして入力してください");
-                return;
-            }
-            if (msg.WriteName?.Length > 30)
-            {
-                Alert("ニックネームは30文字以下にして入力してください"); 
-                return;
-            }
-
-
-            //  メッセージの投稿を行う
-            PostMessage();
-
-            //  Hubに送信します
-            if (hubConnection is not null)
-            {
-                await hubConnection.SendAsync("SendMessage", msg);
-            }
-        }
-        catch
-        {
-            NaviManager.NavigateTo("/Error", forceLoad: true);
-
-        }
-
-
-    }
 
     //  Sendボタンが有効か無効かの判定
     public bool IsConnected =>
