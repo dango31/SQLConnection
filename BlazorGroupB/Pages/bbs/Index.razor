@@ -10,6 +10,7 @@
 @using System.Diagnostics
 @inject BlazorGroupBDbContext _contextThread
 @inject NavigationManager NaviManager
+@inject IJSRuntime JSRuntime
 
 <div class="banner">
     <div class="channel-name text-center" style="font-size: 50px;">
@@ -67,6 +68,8 @@ else
     <div class="text-primary mt-3">No Data...</div>
 }
 
+
+
 @code {
     //  スレッド一覧のデータを保持するList
     private List<Threads> Ths { get; set; }
@@ -89,8 +92,15 @@ else
     /// <returns></returns>
     protected override async Task OnInitializedAsync()
     {
-        //  データベースからデータを取り出す
-        Ths = await _contextThread.Threads.ToListAsync<Threads>();
+        try
+        {
+            //  データベースからデータを取り出す
+            Ths = await _contextThread.Threads.ToListAsync<Threads>();
+        }
+        catch (Exception ex)
+        {
+            NaviManager.NavigateTo("/Error", forceLoad: true);
+        }
 
     }
 
@@ -119,8 +129,39 @@ else
     /// </summary>
     public void SelectSearch()
     {
-        afterSearch = Ths.FindAll(x => x.ThreadName.Contains(searchString));
-        searchbool = true;
+        try
+        {
+            if (searchString.Length > 10)
+            {
+                Alert("10文字以内にしてください");
+            }
+
+            afterSearch = Ths.FindAll(x => x.ThreadName.Contains(searchString));
+            searchbool = true;
+        }
+        catch
+        {
+            NaviManager.NavigateTo("/Error", forceLoad: true);
+        }
+
+    }
+
+    /// <summary>
+    /// エラーメッセージをバナーで出す
+    /// </summary>
+    /// <param name="message"></param>
+    /// <returns></returns>
+    public async Task Alert(string message)
+    {
+        try
+        {
+            await JSRuntime.InvokeAsync<string>("messageBox", message);
+        }
+        catch
+        {
+            NaviManager.NavigateTo("/Error", forceLoad: true);
+        }
+
     }
 
     /// <summary>

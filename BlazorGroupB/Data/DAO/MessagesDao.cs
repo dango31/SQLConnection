@@ -49,13 +49,11 @@ public class MessagesDao
 
         }
 
-        return false;
     }
 
     public int Insert(Messages msg)
     {
         NpgsqlTransaction transaction = null;
-        int result = 0;
 
         //  接続確認
         if (!Connection())

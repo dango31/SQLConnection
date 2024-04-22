@@ -34,7 +34,15 @@
         {
             <div class="message-container border rounded p-3 mt-3">
                 <div class="d-flex justify-content-between">
-                    <div>@msg.UserID</div>
+                    <div>@msg.WriteName</div>
+                    @if (msg.UserID == userdataID)
+                    {
+                        <div style="color:green;">@msg.UserID</div>
+                    }
+                    else
+                    {
+                        <div>@msg.UserID</div>
+                    }
                     <div>@msg.PostTime</div>
                 </div>
                 <div>@msg.DetailMessage</div>
@@ -63,57 +71,6 @@
         </div>
     </div>
 </div>
-
-
-
-@* <button class="btn btn-primary" @onclick="BackTopPage">トップページ</button>
-<button class="btn btn-primary" @onclick="ReloadPage">再読み込み</button> *@
-
-@* スレッドタイトルの表示 
-<h1>@th.ThreadName</h1>
-
-
-@* メッセージ一覧の表示 
-@if (Msgs != null && int.TryParse(CodeID, out int number))
-{
-    <table class="table">
-        <thead>
-            <tr>
-                <th>MessageID</th>
-                <th>WriteName</th>
-                <th>本文DetailMessage</th>
-                <th>UserID</th>
-            </tr>
-        </thead>
-
-        <tbody>
-            @foreach (Messages item in Msgs)
-            {
-                <tr>
-                     <th>@item.MessageID</th>
-                     <th>@item.WriteName</th>
-                     <td>@item.DetailMessage</td> 
-                     <td>@item.UserID</td>
-                </tr>
-            }
-        </tbody>
-    </table>
-}
-else
-{
-    <div class="text-primary">No-Data...</div>
-}
-
-@* メッセージの入力欄 
-<EditForm Model="@msg" OnSubmit="Send">
-    <div class="form-group">
-        <label asp-for="msg.DetailMessage" class="control-label"></label>
-        <input asp-for="msg.DetailMessage" class="form-control" @bind-value=@msg.DetailMessage />
-        <label asp-for="msg.WriteName" class="control-label"></label>
-        <input asp-for="msg.WriteName" class="form-control" @bind-value=@msg.WriteName />
-    </div>
-    <button class="btn btn-primary">Message送信</button>
-</EditForm> *@
 
 
 @code {
@@ -148,27 +105,35 @@ else
     /// </summary>
     private void PostMessage()
     {
-        //  ThreadIDを追加する
-        if (int.TryParse(CodeID, out int number))
+        try
         {
-            msg.ThreadID = number;
+            //  ThreadIDを追加する
+            if (int.TryParse(CodeID, out int number))
+            {
+                msg.ThreadID = number;
+            }
+            else
+            {
+                msg.ThreadID = 0;
+            }
+
+            //  投稿時間を追加する
+            DateTime dt = DateTime.Now;
+            msg.PostTime = dt;
+
+            //  メッセージにUserIDを打ち込む
+            msg.UserID = userdataID;
+
+            //  メッセージを作成する
+            messagesDao.Insert(msg);
         }
-        else
+        catch
         {
-            msg.ThreadID = 0;
+            NaviManager.NavigateTo("/Error", forceLoad: true);
+
         }
 
-        //  投稿時間を追加する
-        DateTime dt = DateTime.Now;
-        msg.PostTime = dt;
 
-        //  メッセージにUserIDを打ち込む
-        msg.UserID = userdataID;
-
-        //  メッセージを作成する
-        messagesDao.Insert(msg);
-
-        //ReloadPage();
     }
 
     /// <summary>
@@ -176,16 +141,24 @@ else
     /// </summary>
     private void daoConnection()
     {
-        var builder = new NpgsqlConnectionStringBuilder
-            {
-                Host = "localhost",
-                Database = "GroupB_DataBase",
-                Username = "postgres",
-                Password = "postgres"
-            };
-        conn = new NpgsqlConnection(builder.ConnectionString);
-        messagesDao = new MessagesDao(conn);
-        usersDao = new UsersDao(conn);
+        try
+        {
+            var builder = new NpgsqlConnectionStringBuilder
+                {
+                    Host = "localhost",
+                    Database = "GroupB_DataBase",
+                    Username = "postgres",
+                    Password = "postgres"
+                };
+            conn = new NpgsqlConnection(builder.ConnectionString);
+            messagesDao = new MessagesDao(conn);
+            usersDao = new UsersDao(conn);
+        }
+        catch
+        {
+            NaviManager.NavigateTo("/Error", forceLoad: true);
+        }
+
     }
     /// <summary>
     /// トップページに戻る
@@ -214,19 +187,26 @@ else
     /// <returns></returns>
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        try
+        {
 
-        daoConnection();
-        //  UAをuserに追加する
-        var remoteUserAgent = await JSRuntime.InvokeAsync<string>("getUserAgent");
-        user.UserAgent = remoteUserAgent;
-        user.UserCreateDate = DateTime.Now;
+            if (firstRender)
+            {
+                //  UAをuserに追加する
+                var remoteUserAgent = await JSRuntime.InvokeAsync<string>("getUserAgent");
+                user.UserAgent = remoteUserAgent;
+                user.UserCreateDate = DateTime.Now;
 
-        //  Userを作成する
-        userdataID = usersDao.Insert(user);
+                //  Userを作成する
+                userdataID = usersDao.Insert(user);
+            }
+        }
+        catch
+        {
+            NaviManager.NavigateTo("/Error", forceLoad: true);
+        }
 
     }
-
-    //追加項目
 
     /// <summary>
     /// 最初に起動される
@@ -234,6 +214,9 @@ else
     /// <returns></returns>
     protected override async Task OnInitializedAsync()
     {
+
+        daoConnection();
+
         //  ハブコネクションの接続の構築
         hubConnection = new HubConnectionBuilder()
             .WithUrl(NaviManager.ToAbsoluteUri("/chathub"))
@@ -263,14 +246,24 @@ else
             }
             catch (Exception ex)
             {
-                Debug.WriteLine(ex.Message);
+                NaviManager.NavigateTo("/Error", forceLoad: true);
             }
 
         }
         else
         {
-            Msgs = await _context.Messages.ToListAsync<Messages>();
+            try
+            {
+                Msgs = await _context.Messages.ToListAsync<Messages>();
+            }
+            catch
+            {
+                NaviManager.NavigateTo("/Error", forceLoad: true);
+
+            }
+
         }
+
         await hubConnection.StartAsync();
     }
 
@@ -280,12 +273,36 @@ else
     /// <returns></returns>
     private async Task Send()
     {
-        PostMessage();
-        //  Hubに送信します
-        if (hubConnection is not null)
+        try
         {
-            await hubConnection.SendAsync("SendMessage", msg);
+            if (msg.DetailMessage.Length > 300)
+            {
+                Alert("投稿内容は300文字以下にして入力してください");
+                return;
+            }
+            if (msg.WriteName?.Length > 30)
+            {
+                Alert("ニックネームは30文字以下にして入力してください"); 
+                return;
+            }
+
+
+            //  メッセージの投稿を行う
+            PostMessage();
+
+            //  Hubに送信します
+            if (hubConnection is not null)
+            {
+                await hubConnection.SendAsync("SendMessage", msg);
+            }
         }
+        catch
+        {
+            NaviManager.NavigateTo("/Error", forceLoad: true);
+
+        }
+
+
     }
 
     //  Sendボタンが有効か無効かの判定
@@ -298,9 +315,36 @@ else
     /// <returns></returns>
     public async ValueTask DisposeAsync()
     {
-        if (hubConnection is not null)
+        try
         {
-            await hubConnection.DisposeAsync();
+            if (hubConnection is not null)
+            {
+                await hubConnection.DisposeAsync();
+            }
         }
+        catch
+        {
+            NaviManager.NavigateTo("/Error", forceLoad: true);
+
+        }
+
+    }
+
+    /// <summary>
+    /// エラーメッセージをバナーで出す
+    /// </summary>
+    /// <param name="message"></param>
+    /// <returns></returns>
+    public async Task Alert(string message)
+    {
+        try
+        {
+            await JSRuntime.InvokeAsync<string>("messageBox", message);
+        }
+        catch
+        {
+            NaviManager.NavigateTo("/Error", forceLoad: true);
+        }
+
     }
 }
