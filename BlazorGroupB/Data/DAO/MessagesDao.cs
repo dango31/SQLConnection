@@ -49,13 +49,11 @@ public class MessagesDao
 
         }
 
-        return false;
     }
 
     public int Insert(Messages msg)
     {
         NpgsqlTransaction transaction = null;
-        int result = 0;
 
         //  接続確認
         if (!Connection())
@@ -65,8 +63,6 @@ public class MessagesDao
         //  DTOの確認
         if (msg == null)
             throw new Exception("新規メッセージ情報の取得に失敗しました");
-
-
 
         try
         {

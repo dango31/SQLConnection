@@ -15,6 +15,6 @@ public class Users
 
     //  作成日
     public DateTime UserCreateDate { get; set; }
-    
+
 
 }
