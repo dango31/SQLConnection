@@ -112,9 +112,17 @@ else
     /// </summary>
     public void ReloadPage()
     {
-        StringBuilder sb = new StringBuilder();
-        sb.Append("/");
-        NaviManager.NavigateTo(sb.ToString(), forceLoad: true);
+        try
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.Append("/");
+            NaviManager.NavigateTo(sb.ToString(), forceLoad: true);
+        }
+        catch
+        {
+            NaviManager.NavigateTo("/Error", forceLoad: true);
+        }
+
     }
 
     /// <summary>
@@ -122,9 +130,17 @@ else
     /// </summary>
     public void NewThread()
     {
-        StringBuilder sb = new StringBuilder();
-        sb.Append("/CreateThreadPage");
-        NaviManager.NavigateTo(sb.ToString(), forceLoad: true);
+        try
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.Append("/CreateThreadPage");
+            NaviManager.NavigateTo(sb.ToString(), forceLoad: true);
+        }
+        catch
+        {
+            NaviManager.NavigateTo("/Error", forceLoad: true);
+        }
+
     }
 
     /// <summary>
@@ -173,8 +189,16 @@ else
     /// </summary>
     public void DoFortuneTelling()
     {
-        StringBuilder sb = new StringBuilder();
-        sb.Append("/UranaiPage");
-        NaviManager.NavigateTo(sb.ToString(), forceLoad: true);
+        try
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.Append("/UranaiPage");
+            NaviManager.NavigateTo(sb.ToString(), forceLoad: true);
+        }
+        catch
+        {
+            NaviManager.NavigateTo("/Error", forceLoad: true);
+        }
+
     }
 }

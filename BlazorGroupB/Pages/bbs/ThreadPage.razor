@@ -91,11 +91,10 @@
     //  このページのスレッド情報を保持する
     Threads th = new Threads();
 
-    //  ユーザー情報を保持する
-    Users user = new Users();
     //  UserIDを保持する
     string userdataID = "";
 
+    //  commonクラス(npgsqlを使うクラス)
     private Common common = new Common();
 
     //  占いデータの保存
@@ -104,6 +103,10 @@
 
     //  Hubの追加
     private HubConnection? hubConnection;
+
+    //  Sendボタンが有効か無効かの判定
+    public bool IsConnected =>
+    hubConnection?.State == HubConnectionState.Connected;
 
     /// <summary>
     /// メッセージの送信を行う
@@ -164,19 +167,37 @@
     /// </summary>
     public void BackTopPage()
     {
-        StringBuilder sb = new StringBuilder();
-        sb.Append("/");
-        NaviManager.NavigateTo(sb.ToString(), forceLoad: true);
+        try
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.Append("/");
+            NaviManager.NavigateTo(sb.ToString(), forceLoad: true);
+        }
+        catch
+        {
+            NaviManager.NavigateTo("/Error", forceLoad: true);
+
+        }
+
     }
     /// <summary>
     /// ページの再読み込み
     /// </summary>
     private void ReloadPage()
     {
-        StringBuilder sb = new StringBuilder();
-        sb.Append("/ThreadPage/")
-            .Append(CodeID);
-        NaviManager.NavigateTo(sb.ToString(), forceLoad: true);
+        try
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.Append("/ThreadPage/")
+                .Append(CodeID);
+            NaviManager.NavigateTo(sb.ToString(), forceLoad: true);
+        }
+        catch
+        {
+            NaviManager.NavigateTo("/Error", forceLoad: true);
+
+        }
+
     }
 
     /// <summary>
@@ -260,15 +281,9 @@
             }
 
         }
-        common = new Common();
 
         await hubConnection.StartAsync();
     }
-
-
-    //  Sendボタンが有効か無効かの判定
-    public bool IsConnected =>
-    hubConnection?.State == HubConnectionState.Connected;
 
     /// <summary>
     /// 不要のリソースを解放し、メモリリークを防ぐために重要らしいです
@@ -286,7 +301,6 @@
         catch
         {
             NaviManager.NavigateTo("/Error", forceLoad: true);
-
         }
 
     }

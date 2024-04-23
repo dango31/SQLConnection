@@ -55,11 +55,8 @@
     private string content = null;
     private string nickname = null;
 
-    //  Usersクラスのインスタンス化
-    Users user = new Users();
     //  ユーザーIDの保持
     string userdataID = "";
-
 
     private Common common = new Common();
 
@@ -68,22 +65,29 @@
     /// </summary>
     private void OnCreateThread()
     {
-        if (title.Length > 100 || title == null)
+        try
         {
-            Alert("タイトルは100文字以下にして入力してください"); 
-            return;
-        }
+            if (title.Length > 100 || title == null)
+            {
+                Alert("タイトルは100文字以下にして入力してください");
+                return;
+            }
 
-        if (content.Length > 300 || content == null)
-        {
-            Alert("投稿内容は300文字以下にして入力してください"); 
-            return;
-        }
-        if (nickname?.Length > 30)
-        {
-            Alert("ニックネームは30文字以下にして入力してください");
-            return;
+            if (content.Length > 300 || content == null)
+            {
+                Alert("投稿内容は300文字以下にして入力してください");
+                return;
+            }
+            if (nickname?.Length > 30)
+            {
+                Alert("ニックネームは30文字以下にして入力してください");
+                return;
 
+            }
+        }
+        catch
+        {
+            NaviManager.NavigateTo("/Error", forceLoad: true);
         }
 
         //  インスタンス化
@@ -95,14 +99,20 @@
         msg.WriteName = nickname ?? "名無し";
         msg.DetailMessage = content;
 
-        //  スレッドとメッセージを新規で作成する
-        int number = common.NewThread(th, userdataID);
-        common.PostMessage(msg, number, userdataID);
+        try
+        {
+            //  スレッドとメッセージを新規で作成する
+            int number = common.NewThread(th, userdataID);
+            common.PostMessage(msg, number, userdataID);
 
-        //  そのurlにジャンプする
-        string url = "/ThreadPage/" + number.ToString();
-        NaviManager.NavigateTo(url);
-
+            //  そのurlにジャンプする
+            string url = "/ThreadPage/" + number.ToString();
+            NaviManager.NavigateTo(url);
+        }
+        catch
+        {
+            NaviManager.NavigateTo("/Error", forceLoad: true);
+        }
     }
 
     /// <summary>
@@ -146,9 +156,17 @@
     /// </summary>
     private void BackTopPage()
     {
-        StringBuilder sb = new StringBuilder();
-        sb.Append("/");
-        NaviManager.NavigateTo(sb.ToString(), forceLoad: true);
+        try
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.Append("/");
+            NaviManager.NavigateTo(sb.ToString(), forceLoad: true);
+        }
+        catch
+        {
+            NaviManager.NavigateTo("/Error", forceLoad: true);
+        }
+
     }
 
     /// <summary>

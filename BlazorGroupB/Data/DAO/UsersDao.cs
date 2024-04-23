@@ -224,8 +224,6 @@ public class UsersDao
         return null;
     }
 
-
-
     public bool UserIDContain(string userid)
     {
 
