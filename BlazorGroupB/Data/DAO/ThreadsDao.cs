@@ -142,7 +142,7 @@ public class ThreadsDao
         //  書き込みを行う
         NpgsqlCommand cmd = new NpgsqlCommand(sql.ToString(), conn);
 
-        cmd.Parameters.AddWithValue("@last_post_time", dt);
+        cmd.Parameters.AddWithValue("@last_post_time", dt.ToString());
         cmd.Parameters.AddWithValue("@thread_id", threadID);
 
         //  TRANSACTION

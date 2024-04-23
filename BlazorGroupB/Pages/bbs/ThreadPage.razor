@@ -24,8 +24,6 @@
         <button class="btn btn-primary rounded-pill" @onclick="ReloadPage">再読み込み</button>
     </div>
 
-    <h1 class="mt-4 text-center">Thread Page</h1>
-
     <!-- スレッドのタイトル -->
     <h3 class="text-center">@th.ThreadName</h3>
 
@@ -61,13 +59,13 @@
         <div class="d-flex flex-wrap align-items-end">
             <div class="flex-grow-1">
                 <h4>コメント内容</h4>
-                <textarea class="form-control mb-2" @bind="msg.DetailMessage" style="height: 150px; resize: none;" placeholder="コメントを入力してください"></textarea>
+                <textarea class="form-control mb-2" @bind="content" style="height: 150px; resize: none;" placeholder="コメントを入力してください"></textarea>
             </div>
         </div>
         <div class="d-flex flex-wrap align-items-end">
             <div class="form-group mb-2" style="flex-basis: 150px;">
                 <label for="nickname">お名前（ニックネーム）</label>
-                <input type="text" class="form-control" @bind="msg.WriteName" id="nickname" placeholder="お名前を入力してください">
+                <input type="text" class="form-control" @bind="nickname" id="nickname" placeholder="お名前を入力してください">
             </div>
             <button class="btn btn-primary rounded-pill ml-2 align-self-end" @onclick="Send">送信</button>
         </div>
@@ -79,6 +77,10 @@
     //  ページの番号を保持する
     [Parameter]
     public string CodeID { get; set; }
+
+    //  入力される値の保持
+    private string content = null;
+    private string nickname = null;
 
     //  メッセージ一覧を保持する
     private List<Messages> Msgs { get; set; } = new List<Messages>();
@@ -94,8 +96,10 @@
     //  UserIDを保持する
     string userdataID = "";
 
-    //  Dao接続
-    private ConnectDao connectDao = new ConnectDao();
+    // //  Dao接続
+    // private ConnectDao connectDao = new ConnectDao();
+
+    private Common common = new Common();
 
     //  占いデータの保存
     List<Uranais> uranais = new List<Uranais>();
@@ -103,8 +107,6 @@
 
     //  Hubの追加
     private HubConnection? hubConnection;
-
-
 
     /// <summary>
     /// メッセージの送信を行う
@@ -114,16 +116,20 @@
     {
         try
         {
-            if (msg.DetailMessage.Length > 300)
+            if (content.Length > 300)
             {
                 Alert("投稿内容は300文字以下にして入力してください");
                 return;
             }
-            if (msg.WriteName?.Length > 30)
+            if (nickname?.Length > 30)
             {
                 Alert("ニックネームは30文字以下にして入力してください");
                 return;
             }
+
+            //  名前と本文を追加する
+            msg.DetailMessage = content;
+            msg.WriteName = nickname ?? "名無し";
 
             //  占いを行う
             if (msg.DetailMessage.Contains("!uranai"))
@@ -133,8 +139,12 @@
                 msg.DetailMessage += "占いの結果：" + ura[0].Fortune;
             }
 
-            //  メッセージの投稿を行う
-            PostMessage();
+            //  ThreadIDを追加する
+            if (int.TryParse(CodeID, out int number))
+            {
+                //  メッセージの投稿を行う
+                common.PostMessage(msg, number, userdataID);
+            }
 
             //  Hubに送信します
             if (hubConnection is not null)
@@ -142,9 +152,8 @@
                 await hubConnection.SendAsync("SendMessage", msg);
             }
 
-            //  msgデータの整理(削除)
-            msg.WriteName = null;
-            msg.DetailMessage = null;
+            //  contentデータの整理(削除)
+            content = null;
 
         }
         catch
@@ -156,43 +165,31 @@
     /// <summary>
     /// メッセージの作成
     /// </summary>
-    private void PostMessage()
-    {
-        try
-        {
-            //  ThreadIDを追加する
-            if (int.TryParse(CodeID, out int number))
-            {
-                msg.ThreadID = number;
-            }
-            else
-            {
-                msg.ThreadID = 0;
-            }
+    // private void PostMessage(int number)
+    // {
+    //     try
+    //     {
+    //         //  ThreadIDを追加する
+    //         msg.ThreadID = number;
 
-            //  メッセージがnullの場合に名前を打ち込む
-            if (msg.WriteName == null)
-                msg.WriteName = "名無し";
+    //         //  メッセージに時間を打ち込む
+    //         DateTime dt = DateTime.Now;
+    //         msg.PostTime = dt.ToString();
 
-            //  メッセージに時間を打ち込む
-            DateTime dt = DateTime.UtcNow;
-            msg.PostTime = dt;
+    //         //  メッセージにUserIDを打ち込む
+    //         msg.UserID = userdataID;
 
-            //  メッセージにUserIDを打ち込む
-            msg.UserID = userdataID;
+    //         //  メッセージを作成する
+    //         connectDao.messagesDao.Insert(msg);
 
-            //  メッセージを作成する
-            connectDao.messagesDao.Insert(msg);
-
-            //  投稿時間をスレッドにUPDATEする
-            connectDao.threadsDao.Update(dt, number);
-        }
-        catch
-        {
-            NaviManager.NavigateTo("/Error", forceLoad: true);
-
-        }
-    }
+    //         //  投稿時間をスレッドにUPDATEする
+    //         connectDao.threadsDao.Update(dt, number);
+    //     }
+    //     catch
+    //     {
+    //         NaviManager.NavigateTo("/Error", forceLoad: true);
+    //     }
+    // }
 
     /// <summary>
     /// トップページに戻る
@@ -227,11 +224,15 @@
             {
                 //  UAをuserに追加する
                 var remoteUserAgent = await JSRuntime.InvokeAsync<string>("getUserAgent");
-                user.UserAgent = remoteUserAgent;
-                user.UserCreateDate = DateTime.Now;
 
                 //  Userを作成する
-                userdataID = connectDao.usersDao.Insert(user);
+                userdataID = common.CreateUserID(remoteUserAgent);
+
+                // user.UserAgent = remoteUserAgent;
+                // user.UserCreateDate = DateTime.Now;
+
+                // //  Userを作成する
+                // userdataID = connectDao.usersDao.Insert(user);
             }
         }
         catch
@@ -296,6 +297,7 @@
             }
 
         }
+        common = new Common();
 
         await hubConnection.StartAsync();
     }

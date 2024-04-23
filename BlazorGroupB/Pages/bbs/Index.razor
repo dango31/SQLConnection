@@ -47,17 +47,25 @@
 }
 else if (searchbool)
 {
-    @foreach (var th in afterSearch)
+    if(afterSearch.Count == 0)
     {
-
-        <div class="message-container border rounded p-3 mt-3">
-            <div class="d-flex justify-content-between">
-                <div><a href="/ThreadPage/@th.ThreadID">@th.ThreadName</a></div>
-                <div>@th.LastPostTime </div>
-                <div>@th.ThreadID</div>
-            </div>
-        </div>
+        <div class="text-primary mt-3">No Data...</div>
     }
+    else
+    {
+        @foreach (var th in afterSearch)
+        {
+
+            <div class="message-container border rounded p-3 mt-3">
+                <div class="d-flex justify-content-between">
+                    <div><a href="/ThreadPage/@th.ThreadID">@th.ThreadName</a></div>
+                    <div>@th.LastPostTime </div>
+                    <div>@th.ThreadID</div>
+                </div>
+            </div>
+        }
+    }
+
 }
 else
 {
@@ -131,6 +139,7 @@ else
             if (searchString.Length > 10)
             {
                 Alert("10文字以内にしてください");
+                return;
             }
 
             afterSearch = Ths.FindAll(x => x.ThreadName.Contains(searchString));
