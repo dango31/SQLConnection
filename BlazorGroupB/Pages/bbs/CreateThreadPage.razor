@@ -60,11 +60,6 @@
     //  ユーザーIDの保持
     string userdataID = "";
 
-    // //  Daoとの接続
-    // private ConnectDao connectDao;
-
-    private Threads th = new Threads();
-    private Messages msg = new Messages();
 
     private Common common = new Common();
 
@@ -91,6 +86,10 @@
 
         }
 
+        //  インスタンス化
+        Threads th = new Threads();
+        Messages msg = new Messages();
+
         //  クラスに値を入れ込む
         th.ThreadName = title;
         msg.WriteName = nickname ?? "名無し";
@@ -100,72 +99,11 @@
         int number = common.NewThread(th, userdataID);
         common.PostMessage(msg, number, userdataID);
 
-        // //  そのurlにジャンプする
+        //  そのurlにジャンプする
         string url = "/ThreadPage/" + number.ToString();
         NaviManager.NavigateTo(url);
 
     }
-
-    /// <summary>
-    /// スレッドを作成する
-    /// </summary>
-    /// <returns>スレッドID</returns>
-    // private int NewThread(Threads th, string userdataID)
-    // {
-    //     try
-    //     {
-    //         //  作成時刻を追加する
-    //         DateTime dt = DateTime.Now;
-    //         th.ThreadCreateDate = dt.ToString();
-
-    //         //  ユーザーIDを追加する
-    //         th.UserID = userdataID;
-
-    //         //  スレッドを作成する
-    //         int number = connectDao.threadsDao.Insert(th);
-
-    //         return number;
-    //     }
-    //     catch
-    //     {
-    //         NaviManager.NavigateTo("/Error", forceLoad: true);
-    //     }
-    //     return 0;
-
-    // }
-
-    /// <summary>
-    /// メッセージを作成する
-    /// </summary>
-    /// <param name="number"></param>
-    // private void PostMessage(int number, string userdataID, Messages msg)
-    // {
-    //     try
-    //     {
-    //         //  ThreadIDを追加する
-    //         msg.ThreadID = number;
-
-    //         //  メッセージにUserIDを打ち込む
-    //         msg.UserID = userdataID;
-
-    //         //  メッセージに時間を打ち込む
-    //         DateTime dt = DateTime.Now;
-    //         msg.PostTime = dt.ToString();
-
-    //         //  メッセージを作成する
-    //         connectDao.messagesDao.Insert(msg);
-
-    //         //  投稿時間をスレッドにUPDATEする
-    //         connectDao.threadsDao.Update(dt, number);
-
-    //     }
-    //     catch
-    //     {
-    //         NaviManager.NavigateTo("/Error", forceLoad: true);
-
-    //     }
-
-    // }
 
     /// <summary>
     /// 最初に起動される

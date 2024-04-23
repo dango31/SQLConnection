@@ -96,9 +96,6 @@
     //  UserIDを保持する
     string userdataID = "";
 
-    // //  Dao接続
-    // private ConnectDao connectDao = new ConnectDao();
-
     private Common common = new Common();
 
     //  占いデータの保存
@@ -163,35 +160,6 @@
     }
 
     /// <summary>
-    /// メッセージの作成
-    /// </summary>
-    // private void PostMessage(int number)
-    // {
-    //     try
-    //     {
-    //         //  ThreadIDを追加する
-    //         msg.ThreadID = number;
-
-    //         //  メッセージに時間を打ち込む
-    //         DateTime dt = DateTime.Now;
-    //         msg.PostTime = dt.ToString();
-
-    //         //  メッセージにUserIDを打ち込む
-    //         msg.UserID = userdataID;
-
-    //         //  メッセージを作成する
-    //         connectDao.messagesDao.Insert(msg);
-
-    //         //  投稿時間をスレッドにUPDATEする
-    //         connectDao.threadsDao.Update(dt, number);
-    //     }
-    //     catch
-    //     {
-    //         NaviManager.NavigateTo("/Error", forceLoad: true);
-    //     }
-    // }
-
-    /// <summary>
     /// トップページに戻る
     /// </summary>
     public void BackTopPage()
@@ -228,11 +196,6 @@
                 //  Userを作成する
                 userdataID = common.CreateUserID(remoteUserAgent);
 
-                // user.UserAgent = remoteUserAgent;
-                // user.UserCreateDate = DateTime.Now;
-
-                // //  Userを作成する
-                // userdataID = connectDao.usersDao.Insert(user);
             }
         }
         catch
