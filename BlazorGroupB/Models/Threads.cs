@@ -15,10 +15,16 @@ public class Threads
     //  ユーザーID
     public string UserID { get; set; }
 
+    //スレッドの作成日時
+    //public DateTime ThreadCreateDate { get; set; }
+
+    //スレッドの更新日時
+    //public DateTime? LastPostTime { get; set; }
+
     //  スレッドの作成日時
-    public DateTime ThreadCreateDate { get; set; }
+    public string ThreadCreateDate { get; set; }
 
     //  スレッドの更新日時
-    public DateTime? LastPostTime { get; set; }
+    public string? LastPostTime { get; set; }
 
 }

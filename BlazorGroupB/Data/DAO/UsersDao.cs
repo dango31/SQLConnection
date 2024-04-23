@@ -25,7 +25,6 @@ public class UsersDao
     public UsersDao(NpgsqlConnection connection)
     {
         conn = connection;
-
     }
 
     public bool Connection()
@@ -72,9 +71,6 @@ public class UsersDao
         string result = "";
         try
         {
-            //  接続確認
-            if (!Connection())
-                throw new Exception("NpgSqlの接続に失敗しました");
 
             //  DTOの確認
             if (userdata == null)
@@ -108,6 +104,11 @@ public class UsersDao
 
         try
         {
+
+            //  接続確認
+            if (!Connection())
+                throw new Exception("NpgSqlの接続に失敗しました");
+
             //  INSERT文
             //  アカウントの部分だけ編集を行う
 
@@ -157,6 +158,11 @@ public class UsersDao
     //  Usersテーブルの重複の排除　既にあればtrueなければfalse
     public string UserAgentContain(Users userdata)
     {
+
+        //  接続確認
+        if (!Connection())
+            throw new Exception("NpgSqlの接続に失敗しました");
+
         StringBuilder sql = new StringBuilder();
         sql.Append("SELECT * FROM \"Users\" ")
             .Append("WHERE \"UserAgent\" = @user_agent");
@@ -201,13 +207,13 @@ public class UsersDao
         {
             Debug.WriteLine(ex.Message);
             Debug.WriteLine(ex.StackTrace);
-            throw new Exception("インサートエラー");
+            throw new Exception("セレクトエラー");
         }
         catch (Exception ex)
         {
             Debug.WriteLine(ex.Message);
             Debug.WriteLine(ex.StackTrace);
-            throw new Exception("インサート処理エラー");
+            throw new Exception("セレクト処理エラー");
         }
         finally
         {
@@ -220,6 +226,11 @@ public class UsersDao
 
     public bool UserIDContain(string userid)
     {
+
+        //  接続確認
+        if (!Connection())
+            throw new Exception("NpgSqlの接続に失敗しました");
+
         StringBuilder sql = new StringBuilder();
         sql.Append("SELECT * FROM \"Users\" ")
             .Append("WHERE \"UserID\" = @user_id");
@@ -249,13 +260,13 @@ public class UsersDao
         {
             Debug.WriteLine(ex.Message);
             Debug.WriteLine(ex.StackTrace);
-            throw new Exception("インサートエラー");
+            throw new Exception("セレクトUserIDエラー");
         }
         catch (Exception ex)
         {
             Debug.WriteLine(ex.Message);
             Debug.WriteLine(ex.StackTrace);
-            throw new Exception("インサート処理エラー");
+            throw new Exception("セレクトUserID処理エラー");
         }
         finally
         {

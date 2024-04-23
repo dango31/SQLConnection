@@ -1,6 +1,7 @@
 ﻿@page "/CreateThreadPage"
 @using BlazorGroupB.Data
 @using BlazorGroupB.Data.DAO;
+@using BlazorGroupB.Data.Utility;
 @using BlazorGroupB.Models
 @using System.Text
 @using Microsoft.EntityFrameworkCore
@@ -27,17 +28,17 @@
         <!-- タイトル入力欄 -->
         <div class="input-group">
             <label for="title">タイトル：</label>
-            <input @bind="title" id="title" type="text" maxlength="20" />
+            <input @bind="title" id="title" type="text" maxlength="100" />
         </div>
         <!-- 投稿内容入力欄 -->
         <div class="input-group">
             <label for="content" class="textarea-label">投稿内容：</label>
-            <textarea @bind="content" id="content" rows="4"></textarea>
+            <textarea @bind="content" id="content" rows="4" maxlength="300"></textarea>
         </div>
         <!-- 名前入力欄 -->
         <div class="input-group">
             <label for="nickname">名前(ニックネーム)：</label>
-            <input @bind="nickname" id="nickname" type="text" />
+            <input @bind="nickname" id="nickname" type="text" maxlength="30" />
         </div>
         <div class="button-group">
             <!-- 全クリアボタン -->
@@ -48,108 +49,70 @@
     </div>
 </div>
 
-@* 入力欄 *@
-@* <EditForm Model="@tmc" OnSubmit="OnCreateThread">
-    <div class="form-group">
-        <label asp-for="tmc.threads.ThreadName" class="control-label"></label>
-        <input asp-for="tmc.threads.ThreadName" class="form-control" @bind-value=@tmc.threads.ThreadName />
-        <label asp-for="tmc.messages.WriteName" class="control-label"></label>
-        <input asp-for="tmc.messages.WriteName" class="form-control" @bind-value=@tmc.messages.WriteName />
-        <label asp-for="tmc.messages.DetailMessage" class="control-label"></label>
-        <input asp-for="tmc.messages.DetailMessage" class="form-control" @bind-value=@tmc.messages.DetailMessage />
-    </div>
-    
-    <button class="btn btn-primary">thread作成</button>
-</EditForm> *@
-
-
-
-
 @code {
 
-    private string title = "";
-    private string content = "";
-    private string nickname = "";
+    private string title = null;
+    private string content = null;
+    private string nickname = null;
 
-    //  Usersクラスのインスタンス化
-    Users user = new Users();
     //  ユーザーIDの保持
     string userdataID = "";
 
-    //  各種Daoクラス。インスタンスは後で行う
-    private NpgsqlConnection conn = null;
-    private ThreadsDao threadsDao;
-    private MessagesDao messagesDao;
-    private UsersDao usersDao;
-
-    //  MessagesクラスとThreadsクラスの値を保持するクラスの作成とインスタンス化
-    public class ThreadMessageClass
-    {
-        public Messages? messages { get; set; } = new Messages();
-        public Threads? threads { get; set; } = new Threads();
-    }
-    ThreadMessageClass tmc = new ThreadMessageClass();
+    private Common common = new Common();
 
     /// <summary>
     /// スレッドとメッセージの書き込み
     /// </summary>
     private void OnCreateThread()
     {
-        if (title == null || content == null)
-            return;
+        try
+        {
+            if (title?.Length > 100 || title == null)
+            {
+                Alert("タイトルは100文字以下にして入力してください");
+                return;
+            }
+
+            if (content?.Length > 300 || content == null)
+            {
+                Alert("投稿内容は300文字以下にして入力してください");
+                return;
+            }
+            if (nickname?.Length > 30)
+            {
+                Alert("ニックネームは30文字以下にして入力してください");
+                return;
+
+            }
+        }
+        catch
+        {
+            NaviManager.NavigateTo("/Error", forceLoad: true);
+        }
+
+        //  インスタンス化
+        Threads th = new Threads();
+        Messages msg = new Messages();
 
         //  クラスに値を入れ込む
-        tmc.threads.ThreadName = title;
-        tmc.messages.WriteName = nickname;
-        tmc.messages.DetailMessage = content;
+        th.ThreadName = title;
+        msg.WriteName = nickname ?? "名無し";
+        msg.DetailMessage = content;
 
-        //  スレッドとメッセージを新規で作成する
-        int number = NewThread();
-        PostMessage(number);
+        try
+        {
+            //  スレッドとメッセージを新規で作成する
+            int number = common.NewThread(th, userdataID);
+            common.PostMessage(msg, number, userdataID);
 
-        // //  そのurlにジャンプする
-        string url = "/ThreadPage/" + number.ToString();
-        NaviManager.NavigateTo(url);
-
-    }
-
-    /// <summary>
-    /// スレッドを作成する
-    /// </summary>
-    /// <returns>スレッドID</returns>
-    private int NewThread()
-    {
-        //  作成時刻を追加する
-        DateTime dt = DateTime.Now;
-        tmc.threads.ThreadCreateDate = dt;
-
-        //  ユーザーIDを追加する
-        tmc.threads.UserID = userdataID;
-
-        //  スレッドを作成する
-        int number = threadsDao.Insert(tmc.threads);
-
-        return number;
-    }
-
-    /// <summary>
-    /// メッセージを作成する
-    /// </summary>
-    /// <param name="number"></param>
-    private void PostMessage(int number)
-    {
-        //  ThreadIDを追加する
-        tmc.messages.ThreadID = number;
-
-        //  投稿時間を追加する
-        DateTime dt = DateTime.Now;
-        tmc.messages.PostTime = dt;
-
-        //  メッセージにUserIDを打ち込む
-        tmc.messages.UserID = userdataID;
-
-        //  メッセージを作成する
-        messagesDao.Insert(tmc.messages);
+            //  そのurlにジャンプする
+            string url = "/ThreadPage/" + number.ToString();
+            NaviManager.NavigateTo(url);
+        }
+        catch
+        {
+            NaviManager.NavigateTo("/Error", forceLoad: true);
+        }
     }
 
     /// <summary>
@@ -158,8 +121,7 @@
     /// <returns></returns>
     protected override async Task OnInitializedAsync()
     {
-        //  各種Daoと接続する
-        daoConnection();
+
     }
 
     /// <summary>
@@ -169,35 +131,23 @@
     /// <returns></returns>
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        //  UAをuserに追加する
-        var remoteUserAgent = await JSRuntime.InvokeAsync<string>("getUserAgent");
-        user.UserAgent = remoteUserAgent;
-        user.UserCreateDate = DateTime.Now;
 
-        //  Userを作成する
-        userdataID = usersDao.Insert(user);
-    }
-
-    /// <summary>
-    /// 各種Daoと接続する
-    /// </summary>
-    private void daoConnection()
-    {
-
-        var builder = new NpgsqlConnectionStringBuilder
+        if (firstRender)
+        {
+            try
             {
-                Host = "localhost",
-                Database = "test",
-                Username = "postgres",
-                Password = "postgres"
-            };
+                //UAをuserに追加する
+                var remoteUserAgent = await JSRuntime.InvokeAsync<string>("getUserAgent");
 
-        conn = new NpgsqlConnection(
-        builder.ConnectionString);
+                //  Userを作成する
+                userdataID = common.CreateUserID(remoteUserAgent);
+            }
+            catch (Exception ex)
+            {
+                NaviManager.NavigateTo("/Error", forceLoad: true);
 
-        threadsDao = new ThreadsDao(conn);
-        messagesDao = new MessagesDao(conn);
-        usersDao = new UsersDao(conn);
+            }
+        }
 
     }
 
@@ -206,9 +156,17 @@
     /// </summary>
     private void BackTopPage()
     {
-        StringBuilder sb = new StringBuilder();
-        sb.Append("/");
-        NaviManager.NavigateTo(sb.ToString(), forceLoad: true);
+        try
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.Append("/");
+            NaviManager.NavigateTo(sb.ToString(), forceLoad: true);
+        }
+        catch
+        {
+            NaviManager.NavigateTo("/Error", forceLoad: true);
+        }
+
     }
 
     /// <summary>
@@ -220,5 +178,23 @@
         title = "";
         content = "";
         nickname = "";
+    }
+
+    /// <summary>
+    /// エラーメッセージの表示
+    /// </summary>
+    /// <param name="message"></param>
+    /// <returns></returns>
+    public async Task Alert(string message)
+    {
+        try
+        {
+            await JSRuntime.InvokeAsync<string>("messageBox", message);
+        }
+        catch
+        {
+            NaviManager.NavigateTo("/Error", forceLoad: true);
+        }
+
     }
 }

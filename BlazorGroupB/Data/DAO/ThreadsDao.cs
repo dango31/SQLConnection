@@ -122,4 +122,34 @@ public class ThreadsDao
 
     }
 
+    public void Update(DateTime dt, int threadID)
+    {
+        NpgsqlTransaction transaction = null;
+
+        //  接続確認
+        if (!Connection())
+            throw new Exception("NpgSqlの接続に失敗しました");
+
+        if (threadID == null || threadID == 0)
+            return;
+
+        StringBuilder sql = new StringBuilder();
+        sql.Append("UPDATE \"Threads\" ")
+            .Append(" SET \"LastPostTime\" = @last_post_time ")
+            .Append(" WHERE \"ThreadID\" = @thread_id ")
+            .Append(" RETURNING \"ThreadID\"");
+
+        //  書き込みを行う
+        NpgsqlCommand cmd = new NpgsqlCommand(sql.ToString(), conn);
+
+        cmd.Parameters.AddWithValue("@last_post_time", dt.ToString());
+        cmd.Parameters.AddWithValue("@thread_id", threadID);
+
+        //  TRANSACTION
+        transaction = conn.BeginTransaction();
+        int lastid = (int)cmd.ExecuteScalar();
+
+        //  TRANSACTIONコミット
+        transaction.Commit();
+    }
 }

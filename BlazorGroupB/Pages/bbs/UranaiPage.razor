@@ -8,9 +8,9 @@
 @using Npgsql
 @using System.Data
 @using System.Diagnostics
+@using BlazorGroupB.Data.Utility
 @inject BlazorGroupB.Data.BlazorGroupBDbContext _contextUranais
 @inject NavigationManager NaviManager
-
 
 <button class="btn btn-primary" @onclick="BackTopPage">トップページ</button>
 <h3>今日の運勢は・・・@unOne.Fortune！</h3>
@@ -32,12 +32,20 @@
     /// <returns></returns>
     protected override async Task OnInitializedAsync()
     {
-        RandomUranai();
+        try
+        {
+            RandomUranai();
 
-        List<Uranais> uranais = new List<Uranais>();
-        //  データベースからデータを取り出す
-        uranais = await _contextUranais.Uranais.Where(m => m.UranaiID == fortuneNumber).ToListAsync<Uranais>();
-        unOne = uranais[0];
+            List<Uranais> uranais = new List<Uranais>();
+            //  データベースからデータを取り出す
+            uranais = await _contextUranais.Uranais.Where(m => m.UranaiID == fortuneNumber).ToListAsync<Uranais>();
+            unOne = uranais[0];
+        }
+        catch
+        {
+            NaviManager.NavigateTo("/Error", forceLoad: true);
+        }
+
     }
 
     /// <summary>
@@ -53,8 +61,16 @@
     /// </summary>
     public void BackTopPage()
     {
-        StringBuilder sb = new StringBuilder();
-        sb.Append("/");
-        NaviManager.NavigateTo(sb.ToString(), forceLoad: true);
+        try
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.Append("/");
+            NaviManager.NavigateTo(sb.ToString(), forceLoad: true);
+        }
+        catch
+        {
+            NaviManager.NavigateTo("/Error", forceLoad: true);
+        }
+
     }
 }

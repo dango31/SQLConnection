@@ -10,6 +10,7 @@
 @using System.Diagnostics
 @inject BlazorGroupBDbContext _contextThread
 @inject NavigationManager NaviManager
+@inject IJSRuntime JSRuntime
 
 <div class="banner">
     <div class="channel-name text-center" style="font-size: 50px;">
@@ -30,37 +31,40 @@
     <button @onclick="SelectSearch" class="button">検索</button>
 </div>
 
-
+<div style="text-align: right">更新順</div>
 <!-- メッセージ一覧 -->
 @if (Ths != null && !searchbool)
 {
     @foreach (var th in Ths)
     {
-        
         <div class="message-container border rounded p-3 mt-3">
-            <a href="/ThreadPage/@th.ThreadID">
             <div class="d-flex justify-content-between">
-                <div>@th.ThreadName</div>
-                <div>@th.ThreadID</div>
+                <div>@th.ThreadID <a href="/ThreadPage/@th.ThreadID">@th.ThreadName</a></div>
+                <div>@th.LastPostTime</div>
             </div>
-            </a>
         </div>
     }
 }
 else if (searchbool)
 {
-    @foreach (var th in afterSearch)
+    if(afterSearch.Count == 0)
     {
-
-        <div class="message-container border rounded p-3 mt-3">
-            <a href="/ThreadPage/@th.ThreadID">
-                <div class="d-flex justify-content-between">
-                    <div>@th.ThreadName</div>
-                    <div>@th.ThreadID</div>
-                </div>
-            </a>
-        </div>
+        <div class="text-primary mt-3">No Data...</div>
     }
+    else
+    {
+        @foreach (var th in afterSearch)
+        {
+
+            <div class="message-container border rounded p-3 mt-3">
+                <div class="d-flex justify-content-between">
+                    <div>@th.ThreadID <a href="/ThreadPage/@th.ThreadID">@th.ThreadName</a></div>
+                    <div>@th.LastPostTime</div>
+                </div>
+            </div>
+        }
+    }
+
 }
 else
 {
@@ -78,7 +82,7 @@ else
     private bool searchbool = false;
 
     //  検索文字の保持
-    string searchString;
+    string searchString = null;
 
     // チャンネル名を保持するプロパティ
     private string ChannelName { get; set; } = "エール第一チャンネル";
@@ -89,8 +93,16 @@ else
     /// <returns></returns>
     protected override async Task OnInitializedAsync()
     {
-        //  データベースからデータを取り出す
-        Ths = await _contextThread.Threads.ToListAsync<Threads>();
+        try
+        {
+            //  データベースからデータを取り出す
+            Ths = await _contextThread.Threads.ToListAsync<Threads>();
+            Ths.Reverse();
+        }
+        catch (Exception ex)
+        {
+            NaviManager.NavigateTo("/Error", forceLoad: true);
+        }
 
     }
 
@@ -99,9 +111,17 @@ else
     /// </summary>
     public void ReloadPage()
     {
-        StringBuilder sb = new StringBuilder();
-        sb.Append("/");
-        NaviManager.NavigateTo(sb.ToString(), forceLoad: true);
+        try
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.Append("/");
+            NaviManager.NavigateTo(sb.ToString(), forceLoad: true);
+        }
+        catch
+        {
+            NaviManager.NavigateTo("/Error", forceLoad: true);
+        }
+
     }
 
     /// <summary>
@@ -109,9 +129,17 @@ else
     /// </summary>
     public void NewThread()
     {
-        StringBuilder sb = new StringBuilder();
-        sb.Append("/CreateThreadPage");
-        NaviManager.NavigateTo(sb.ToString(), forceLoad: true);
+        try
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.Append("/CreateThreadPage");
+            NaviManager.NavigateTo(sb.ToString(), forceLoad: true);
+        }
+        catch
+        {
+            NaviManager.NavigateTo("/Error", forceLoad: true);
+        }
+
     }
 
     /// <summary>
@@ -119,8 +147,40 @@ else
     /// </summary>
     public void SelectSearch()
     {
-        afterSearch = Ths.FindAll(x => x.ThreadName.Contains(searchString));
-        searchbool = true;
+        try
+        {
+            if (searchString.Length > 10)
+            {
+                Alert("10文字以内にしてください");
+                return;
+            }
+
+            afterSearch = Ths.FindAll(x => x.ThreadName.Contains(searchString));
+            searchbool = true;
+        }
+        catch
+        {
+            NaviManager.NavigateTo("/Error", forceLoad: true);
+        }
+
+    }
+
+    /// <summary>
+    /// エラーメッセージをバナーで出す
+    /// </summary>
+    /// <param name="message"></param>
+    /// <returns></returns>
+    public async Task Alert(string message)
+    {
+        try
+        {
+            await JSRuntime.InvokeAsync<string>("messageBox", message);
+        }
+        catch
+        {
+            NaviManager.NavigateTo("/Error", forceLoad: true);
+        }
+
     }
 
     /// <summary>
@@ -128,8 +188,16 @@ else
     /// </summary>
     public void DoFortuneTelling()
     {
-        StringBuilder sb = new StringBuilder();
-        sb.Append("/UranaiPage");
-        NaviManager.NavigateTo(sb.ToString(), forceLoad: true);
+        try
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.Append("/UranaiPage");
+            NaviManager.NavigateTo(sb.ToString(), forceLoad: true);
+        }
+        catch
+        {
+            NaviManager.NavigateTo("/Error", forceLoad: true);
+        }
+
     }
 }

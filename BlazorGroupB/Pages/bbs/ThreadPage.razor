@@ -2,9 +2,11 @@
 @using BlazorGroupB.Data
 @using BlazorGroupB.Data.DAO;
 @using BlazorGroupB.Models
+@using BlazorGroupB.Data.Utility;
 @using System.Text
 @using Microsoft.EntityFrameworkCore
 @using System.Configuration
+@using Microsoft.Extensions.Hosting;
 @using Npgsql
 @using System.Data
 @using System.Diagnostics
@@ -22,8 +24,6 @@
         <button class="btn btn-primary rounded-pill" @onclick="ReloadPage">再読み込み</button>
     </div>
 
-    <h1 class="mt-4 text-center">Thread Page</h1>
-
     <!-- スレッドのタイトル -->
     <h3 class="text-center">@th.ThreadName</h3>
 
@@ -34,7 +34,15 @@
         {
             <div class="message-container border rounded p-3 mt-3">
                 <div class="d-flex justify-content-between">
-                    <div>@msg.UserID</div>
+                    <div>@msg.WriteName</div>
+                    @if (msg.UserID == userdataID)
+                    {
+                        <div style="color:green;">@msg.UserID</div>
+                    }
+                    else
+                    {
+                        <div>@msg.UserID</div>
+                    }
                     <div>@msg.PostTime</div>
                 </div>
                 <div>@msg.DetailMessage</div>
@@ -51,13 +59,13 @@
         <div class="d-flex flex-wrap align-items-end">
             <div class="flex-grow-1">
                 <h4>コメント内容</h4>
-                <textarea class="form-control mb-2" @bind="msg.DetailMessage" style="height: 150px; resize: none;" placeholder="コメントを入力してください"></textarea>
+                <textarea class="form-control mb-2" @bind="content" style="height: 150px; resize: none;" maxlength="300" placeholder="コメントを入力してください"></textarea>
             </div>
         </div>
         <div class="d-flex flex-wrap align-items-end">
             <div class="form-group mb-2" style="flex-basis: 150px;">
                 <label for="nickname">お名前（ニックネーム）</label>
-                <input type="text" class="form-control" @bind="msg.WriteName" id="nickname" placeholder="お名前を入力してください">
+                <input type="text" class="form-control" @bind="nickname" id="nickname" maxlength="30" placeholder="お名前を入力してください">
             </div>
             <button class="btn btn-primary rounded-pill ml-2 align-self-end" @onclick="Send">送信</button>
         </div>
@@ -65,61 +73,14 @@
 </div>
 
 
-
-@* <button class="btn btn-primary" @onclick="BackTopPage">トップページ</button>
-<button class="btn btn-primary" @onclick="ReloadPage">再読み込み</button> *@
-
-@* スレッドタイトルの表示 
-<h1>@th.ThreadName</h1>
-
-
-@* メッセージ一覧の表示 
-@if (Msgs != null && int.TryParse(CodeID, out int number))
-{
-    <table class="table">
-        <thead>
-            <tr>
-                <th>MessageID</th>
-                <th>WriteName</th>
-                <th>本文DetailMessage</th>
-                <th>UserID</th>
-            </tr>
-        </thead>
-
-        <tbody>
-            @foreach (Messages item in Msgs)
-            {
-                <tr>
-                     <th>@item.MessageID</th>
-                     <th>@item.WriteName</th>
-                     <td>@item.DetailMessage</td> 
-                     <td>@item.UserID</td>
-                </tr>
-            }
-        </tbody>
-    </table>
-}
-else
-{
-    <div class="text-primary">No-Data...</div>
-}
-
-@* メッセージの入力欄 
-<EditForm Model="@msg" OnSubmit="Send">
-    <div class="form-group">
-        <label asp-for="msg.DetailMessage" class="control-label"></label>
-        <input asp-for="msg.DetailMessage" class="form-control" @bind-value=@msg.DetailMessage />
-        <label asp-for="msg.WriteName" class="control-label"></label>
-        <input asp-for="msg.WriteName" class="form-control" @bind-value=@msg.WriteName />
-    </div>
-    <button class="btn btn-primary">Message送信</button>
-</EditForm> *@
-
-
 @code {
     //  ページの番号を保持する
     [Parameter]
     public string CodeID { get; set; }
+
+    //  入力される値の保持
+    private string content = null;
+    private string nickname = null;
 
     //  メッセージ一覧を保持する
     private List<Messages> Msgs { get; set; } = new List<Messages>();
@@ -130,81 +91,119 @@ else
     //  このページのスレッド情報を保持する
     Threads th = new Threads();
 
-    //  ユーザー情報を保持する
-    Users user = new Users();
     //  UserIDを保持する
     string userdataID = "";
 
-    //  各種Dao。インスタンスは後で行う
-    private NpgsqlConnection conn = null;
-    private MessagesDao messagesDao;
-    private UsersDao usersDao;
+    //  commonクラス(npgsqlを使うクラス)
+    private Common common = new Common();
 
-    //  追加
+    //  占いデータの保存
+    List<Uranais> uranais = new List<Uranais>();
+    Random rm = new Random();
+
+    //  Hubの追加
     private HubConnection? hubConnection;
 
-    /// <summary>
-    /// メッセージの作成
-    /// </summary>
-    private void PostMessage()
-    {
-        //  ThreadIDを追加する
-        if (int.TryParse(CodeID, out int number))
-        {
-            msg.ThreadID = number;
-        }
-        else
-        {
-            msg.ThreadID = 0;
-        }
-
-        //  投稿時間を追加する
-        DateTime dt = DateTime.Now;
-        msg.PostTime = dt;
-
-        //  メッセージにUserIDを打ち込む
-        msg.UserID = userdataID;
-
-        //  メッセージを作成する
-        messagesDao.Insert(msg);
-
-        //ReloadPage();
-    }
+    //  Sendボタンが有効か無効かの判定
+    public bool IsConnected =>
+    hubConnection?.State == HubConnectionState.Connected;
 
     /// <summary>
-    /// 各種Daoのインスタンス
+    /// メッセージの送信を行う
     /// </summary>
-    private void daoConnection()
+    /// <returns></returns>
+    private async Task Send()
     {
-        var builder = new NpgsqlConnectionStringBuilder
+        try
+        {
+            if (content == null)
             {
-                Host = "localhost",
-                Database = "test",
-                Username = "postgres",
-                Password = "postgres"
-            };
-        conn = new NpgsqlConnection(builder.ConnectionString);
-        messagesDao = new MessagesDao(conn);
-        usersDao = new UsersDao(conn);
+                Alert("本文を入力してください");
+                return;
+            }
+            if (content?.Length > 300)
+            {
+                Alert("投稿内容は300文字以下にして入力してください");
+                return;
+            }
+            if (nickname?.Length > 30)
+            {
+                Alert("ニックネームは30文字以下にして入力してください");
+                return;
+            }
+
+            //  名前と本文を追加する
+            msg.DetailMessage = content;
+            msg.WriteName = nickname ?? "名無し";
+
+            //  占いを行う
+            if (msg.DetailMessage.Contains("!uranai"))
+            {
+                List<Uranais> ura = new List<Uranais>();
+                int rand = rm.Next(1, 7);
+                ura = uranais.Where(m => m.UranaiID == rand).ToList();
+                msg.DetailMessage += "占いの結果：" + ura[0].Fortune;
+            }
+
+            //  ThreadIDを追加する
+            if (int.TryParse(CodeID, out int number))
+            {
+                //  メッセージの投稿を行う
+                common.PostMessage(msg, number, userdataID);
+            }
+
+            //  Hubに送信します
+            if (hubConnection is not null)
+            {
+                await hubConnection.SendAsync("SendMessage", msg);
+            }
+
+            //  contentデータの整理(削除)
+            content = null;
+
+        }
+        catch
+        {
+            NaviManager.NavigateTo("/Error", forceLoad: true);
+        }
     }
+
     /// <summary>
     /// トップページに戻る
     /// </summary>
     public void BackTopPage()
     {
-        StringBuilder sb = new StringBuilder();
-        sb.Append("/");
-        NaviManager.NavigateTo(sb.ToString(), forceLoad: true);
+        try
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.Append("/");
+            NaviManager.NavigateTo(sb.ToString(), forceLoad: true);
+        }
+        catch
+        {
+            NaviManager.NavigateTo("/Error", forceLoad: true);
+
+        }
+
     }
     /// <summary>
     /// ページの再読み込み
     /// </summary>
     private void ReloadPage()
     {
-        StringBuilder sb = new StringBuilder();
-        sb.Append("/ThreadPage/")
-            .Append(CodeID);
-        NaviManager.NavigateTo(sb.ToString(), forceLoad: true);
+        try
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.Append("/ThreadPage/")
+                .Append(CodeID);
+            NaviManager.NavigateTo(sb.ToString(), forceLoad: true);
+        }
+        catch
+        {
+            NaviManager.NavigateTo("/Error", forceLoad: true);
+
+        }
+
     }
 
     /// <summary>
@@ -214,19 +213,24 @@ else
     /// <returns></returns>
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        try
+        {
+            if (firstRender)
+            {
+                //  UAをuserに追加する
+                var remoteUserAgent = await JSRuntime.InvokeAsync<string>("getUserAgent");
 
-        daoConnection();
-        //  UAをuserに追加する
-        var remoteUserAgent = await JSRuntime.InvokeAsync<string>("getUserAgent");
-        user.UserAgent = remoteUserAgent;
-        user.UserCreateDate = DateTime.Now;
+                //  Userを作成する
+                userdataID = common.CreateUserID(remoteUserAgent);
 
-        //  Userを作成する
-        userdataID = usersDao.Insert(user);
+            }
+        }
+        catch
+        {
+            NaviManager.NavigateTo("/Error", forceLoad: true);
+        }
 
     }
-
-    //追加項目
 
     /// <summary>
     /// 最初に起動される
@@ -234,6 +238,7 @@ else
     /// <returns></returns>
     protected override async Task OnInitializedAsync()
     {
+
         //  ハブコネクションの接続の構築
         hubConnection = new HubConnectionBuilder()
             .WithUrl(NaviManager.ToAbsoluteUri("/chathub"))
@@ -260,37 +265,31 @@ else
                 ths = await _context.Threads.Where(m => m.ThreadID == number).ToListAsync<Threads>();
                 th = ths[0];
 
+                //  占い一覧を取り出す
+                uranais = await _context.Uranais.ToListAsync<Uranais>();
+
             }
             catch (Exception ex)
             {
-                Debug.WriteLine(ex.Message);
+                NaviManager.NavigateTo("/Error", forceLoad: true);
             }
 
         }
         else
         {
-            Msgs = await _context.Messages.ToListAsync<Messages>();
+            try
+            {
+                Msgs = await _context.Messages.ToListAsync<Messages>();
+            }
+            catch
+            {
+                NaviManager.NavigateTo("/Error", forceLoad: true);
+            }
+
         }
+
         await hubConnection.StartAsync();
     }
-
-    /// <summary>
-    /// メッセージの送信を行う
-    /// </summary>
-    /// <returns></returns>
-    private async Task Send()
-    {
-        PostMessage();
-        //  Hubに送信します
-        if (hubConnection is not null)
-        {
-            await hubConnection.SendAsync("SendMessage", msg);
-        }
-    }
-
-    //  Sendボタンが有効か無効かの判定
-    public bool IsConnected =>
-    hubConnection?.State == HubConnectionState.Connected;
 
     /// <summary>
     /// 不要のリソースを解放し、メモリリークを防ぐために重要らしいです
@@ -298,9 +297,35 @@ else
     /// <returns></returns>
     public async ValueTask DisposeAsync()
     {
-        if (hubConnection is not null)
+        try
         {
-            await hubConnection.DisposeAsync();
+            if (hubConnection is not null)
+            {
+                await hubConnection.DisposeAsync();
+            }
         }
+        catch
+        {
+            NaviManager.NavigateTo("/Error", forceLoad: true);
+        }
+
+    }
+
+    /// <summary>
+    /// エラーメッセージをバナーで出す
+    /// </summary>
+    /// <param name="message"></param>
+    /// <returns></returns>
+    public async Task Alert(string message)
+    {
+        try
+        {
+            await JSRuntime.InvokeAsync<string>("messageBox", message);
+        }
+        catch
+        {
+            NaviManager.NavigateTo("/Error", forceLoad: true);
+        }
+
     }
 }

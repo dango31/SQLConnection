@@ -21,7 +21,10 @@ public class Messages
     //  メッセージ本文
     public string? DetailMessage { get; set; }
 
+    ////  投稿日時
+    //public DateTime PostTime { get; set; }
+
     //  投稿日時
-    public DateTime PostTime { get; set; }
+    public string? PostTime { get; set; }
 
 }
