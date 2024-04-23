@@ -59,13 +59,13 @@
         <div class="d-flex flex-wrap align-items-end">
             <div class="flex-grow-1">
                 <h4>コメント内容</h4>
-                <textarea class="form-control mb-2" @bind="content" style="height: 150px; resize: none;" placeholder="コメントを入力してください"></textarea>
+                <textarea class="form-control mb-2" @bind="content" style="height: 150px; resize: none;" maxlength="300" placeholder="コメントを入力してください"></textarea>
             </div>
         </div>
         <div class="d-flex flex-wrap align-items-end">
             <div class="form-group mb-2" style="flex-basis: 150px;">
                 <label for="nickname">お名前（ニックネーム）</label>
-                <input type="text" class="form-control" @bind="nickname" id="nickname" placeholder="お名前を入力してください">
+                <input type="text" class="form-control" @bind="nickname" id="nickname" maxlength="30" placeholder="お名前を入力してください">
             </div>
             <button class="btn btn-primary rounded-pill ml-2 align-self-end" @onclick="Send">送信</button>
         </div>
@@ -116,7 +116,12 @@
     {
         try
         {
-            if (content.Length > 300)
+            if (content == null)
+            {
+                Alert("本文を入力してください");
+                return;
+            }
+            if (content?.Length > 300)
             {
                 Alert("投稿内容は300文字以下にして入力してください");
                 return;
@@ -135,7 +140,8 @@
             if (msg.DetailMessage.Contains("!uranai"))
             {
                 List<Uranais> ura = new List<Uranais>();
-                ura = uranais.Where(m => m.UranaiID == rm.Next(1, 7)).ToList();
+                int rand = rm.Next(1, 7);
+                ura = uranais.Where(m => m.UranaiID == rand).ToList();
                 msg.DetailMessage += "占いの結果：" + ura[0].Fortune;
             }
 

@@ -28,17 +28,17 @@
         <!-- タイトル入力欄 -->
         <div class="input-group">
             <label for="title">タイトル：</label>
-            <input @bind="title" id="title" type="text" maxlength="20" />
+            <input @bind="title" id="title" type="text" maxlength="100" />
         </div>
         <!-- 投稿内容入力欄 -->
         <div class="input-group">
             <label for="content" class="textarea-label">投稿内容：</label>
-            <textarea @bind="content" id="content" rows="4"></textarea>
+            <textarea @bind="content" id="content" rows="4" maxlength="300"></textarea>
         </div>
         <!-- 名前入力欄 -->
         <div class="input-group">
             <label for="nickname">名前(ニックネーム)：</label>
-            <input @bind="nickname" id="nickname" type="text" />
+            <input @bind="nickname" id="nickname" type="text" maxlength="30" />
         </div>
         <div class="button-group">
             <!-- 全クリアボタン -->
@@ -67,13 +67,13 @@
     {
         try
         {
-            if (title.Length > 100 || title == null)
+            if (title?.Length > 100 || title == null)
             {
                 Alert("タイトルは100文字以下にして入力してください");
                 return;
             }
 
-            if (content.Length > 300 || content == null)
+            if (content?.Length > 300 || content == null)
             {
                 Alert("投稿内容は300文字以下にして入力してください");
                 return;
